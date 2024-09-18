@@ -1,0 +1,15 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+
+    <PropertyGroup>
+        <TargetFramework>net5.0-windows</TargetFramework>
+        <Nullable>enable</Nullable>
+        <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
+        <UseWindowsForms>true</UseWindowsForms>
+        <SignAssembly>true</SignAssembly>
+        <AssemblyOriginatorKeyFile>cyusb.snk</AssemblyOriginatorKeyFile>
+    </PropertyGroup>
+
+    <ItemGroup>
+        <None Include="cyusb.snk" />
+    </ItemGroup>
+</Project>
