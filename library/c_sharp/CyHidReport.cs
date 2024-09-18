@@ -40,41 +40,23 @@ namespace CyUSB
 
         public byte[] DataBuf;
 
-        byte _ReportID;
-        public byte ID
-        {
-            get { return _ReportID; }
-        }
+        byte        _ReportID;
+        public byte ID => _ReportID;
 
-        int _RptByteLen;
-        public int RptByteLen
-        {
-            get { return _RptByteLen; }
-        }
+        int        _RptByteLen;
+        public int RptByteLen => _RptByteLen;
 
-        int _NumBtnCaps;
-        public int NumBtnCaps
-        {
-            get { return _NumBtnCaps; }
-        }
+        int        _NumBtnCaps;
+        public int NumBtnCaps => _NumBtnCaps;
 
-        int _NumValCaps;
-        public int NumValCaps
-        {
-            get { return _NumValCaps; }
-        }
+        int        _NumValCaps;
+        public int NumValCaps => _NumValCaps;
 
-        int _NumValues;
-        public int NumValues
-        {
-            get { return _NumValues; }
-        }
+        int        _NumValues;
+        public int NumValues => _NumValues;
 
-        int _NumItems;
-        public int NumItems
-        {
-            get { return _NumItems; }
-        }
+        int        _NumItems;
+        public int NumItems => _NumItems;
 
         internal unsafe CyHidReport(HIDP_REPORT_TYPE rType, HIDP_CAPS hidCaps, byte* PreparsedDta)
         {
@@ -107,12 +89,12 @@ namespace CyUSB
                 HIDP_BTN_VAL_CAPS ButtonCaps;
                 Buttons = new CyHidButton[_NumBtnCaps];
 
-                HIDP_BTN_VAL_CAPS bc = new HIDP_BTN_VAL_CAPS();
-                byte[] buffer = new byte[_NumBtnCaps * Marshal.SizeOf(bc)];
+                var bc = new HIDP_BTN_VAL_CAPS();
+                var buffer = new byte[_NumBtnCaps * Marshal.SizeOf(bc)];
 
                 fixed (byte* buf = buffer)
                 {
-                    int numCaps = _NumBtnCaps;
+                    var numCaps = _NumBtnCaps;
                     //
                     //  BUGFIX 3/07/2008 - HidP_GetButtonCaps will modify numCaps to the
                     //      "actual number of elements that the routine returns".
@@ -130,8 +112,8 @@ namespace CyUSB
                     //
                     _NumBtnCaps = numCaps;
 
-                    HIDP_BTN_VAL_CAPS* bCaps = (HIDP_BTN_VAL_CAPS*)buf;
-                    for (int i = 0; i < _NumBtnCaps; i++)
+                    var bCaps = (HIDP_BTN_VAL_CAPS*)buf;
+                    for (var i = 0; i < _NumBtnCaps; i++)
                     {
                         // This assignment copies values from buf into ButtonCaps.
                         ButtonCaps = bCaps[i];
@@ -151,19 +133,19 @@ namespace CyUSB
             {
                 Values = new CyHidValue[_NumValCaps];
 
-                HIDP_BTN_VAL_CAPS vc = new HIDP_BTN_VAL_CAPS();
-                byte[] buffer = new byte[_NumValCaps * Marshal.SizeOf(vc)];
+                var vc = new HIDP_BTN_VAL_CAPS();
+                var buffer = new byte[_NumValCaps * Marshal.SizeOf(vc)];
 
                 fixed (byte* buf = buffer)
                 {
-                    int numCaps = _NumValCaps;
+                    var numCaps = _NumValCaps;
                     PInvoke.HidP_GetValueCaps(rType, buf, ref numCaps, PreparsedDta);
 
-                    HIDP_BTN_VAL_CAPS* vCaps = (HIDP_BTN_VAL_CAPS*)buf;
-                    for (int i = 0; i < _NumValCaps; i++)
+                    var vCaps = (HIDP_BTN_VAL_CAPS*)buf;
+                    for (var i = 0; i < _NumValCaps; i++)
                     {
                         // This assignment copies values from buf into ValueCaps.
-                        HIDP_BTN_VAL_CAPS ValueCaps = vCaps[i];
+                        var ValueCaps = vCaps[i];
 
                         // Note that you must pass ValueCaps[i] to the
                         // below constructor and not vCaps[i]
@@ -177,7 +159,7 @@ namespace CyUSB
 
 
             _NumValues = 0;
-            for (int i = 0; i < _NumValCaps; i++)
+            for (var i = 0; i < _NumValCaps; i++)
                 //if (Values[i].IsRange)
                 //    _NumValues += Values[i].UsageMax - Values[i].Usage + 1;
                 //else
@@ -189,9 +171,9 @@ namespace CyUSB
             if (_NumItems > 0) Items = new HID_DATA[_NumItems];
 
             //if ((ButtonCaps != null) && (Items != null))
-            if ((_NumBtnCaps > 0) && (Items != null))
+            if (_NumBtnCaps > 0 && Items != null)
             {
-                for (int i = 0; i < _NumBtnCaps; i++)
+                for (var i = 0; i < _NumBtnCaps; i++)
                 {
                     Items[i].IsButtonData = 1;
                     Items[i].Status = CyConst.HIDP_STATUS_SUCCESS;
@@ -217,11 +199,11 @@ namespace CyUSB
             }
 
 
-            for (int i = 0; i < _NumValues; i++)
+            for (var i = 0; i < _NumValues; i++)
             {
                 if (Values[i].IsRange)
                 {
-                    for (ushort usage = Values[i].Usage;
+                    for (var usage = Values[i].Usage;
                         usage <= Values[i].UsageMax;
                         usage++)
                     {
@@ -248,7 +230,7 @@ namespace CyUSB
 
         public void Clear()
         {
-            for (int i = 0; i <= RptByteLen; i++)
+            for (var i = 0; i <= RptByteLen; i++)
                 DataBuf[i] = 0;
         }
 
@@ -256,33 +238,41 @@ namespace CyUSB
         {
             get
             {
-                string sType = "";
-
-                if (_rptType == HIDP_REPORT_TYPE.HidP_Input) sType = "Input";
-                else if (_rptType == HIDP_REPORT_TYPE.HidP_Output) sType = "Output";
-                else if (_rptType == HIDP_REPORT_TYPE.HidP_Feature) sType = "Feature";
+                var sType = _rptType switch
+                {
+                    HIDP_REPORT_TYPE.HidP_Input   => "Input",
+                    HIDP_REPORT_TYPE.HidP_Output  => "Output",
+                    HIDP_REPORT_TYPE.HidP_Feature => "Feature",
+                    _                             => ""
+                };
 
                 if (_NumItems > 0)
                 {
-                    TreeNode[] subTree = new TreeNode[_NumItems];
+                    var subTree = new TreeNode[_NumItems];
 
-                    int b = 0;
+                    var b = 0;
                     for (b = 0; b < _NumBtnCaps; b++)
                     {
-                        TreeNode t = new TreeNode("Button");
-                        t.Tag = Buttons[b];
+                        var t = new TreeNode("Button")
+                        {
+                            Tag = Buttons[b]
+                        };
                         subTree[b] = t;
                     }
 
-                    for (int v = 0; v < _NumValCaps; v++)
+                    for (var v = 0; v < _NumValCaps; v++)
                     {
-                        TreeNode t = new TreeNode("Value");
-                        t.Tag = Values[v];
+                        var t = new TreeNode("Value")
+                        {
+                            Tag = Values[v]
+                        };
                         subTree[b + v] = t;
                     }
 
-                    TreeNode tr = new TreeNode(sType, subTree);
-                    tr.Tag = this;
+                    var tr = new TreeNode(sType, subTree)
+                    {
+                        Tag = this
+                    };
 
                     return tr;
                 }
@@ -296,29 +286,32 @@ namespace CyUSB
 
         public override string ToString()
         {
-            StringBuilder s = new StringBuilder();
-            string sRptType = "";
+            var s = new StringBuilder();
 
-            if (_rptType == HIDP_REPORT_TYPE.HidP_Feature) sRptType = "FEATURE";
-            else if (_rptType == HIDP_REPORT_TYPE.HidP_Input) sRptType = "INPUT";
-            else if (_rptType == HIDP_REPORT_TYPE.HidP_Output) sRptType = "OUTPUT";
+            var sRptType = _rptType switch
+            {
+                HIDP_REPORT_TYPE.HidP_Feature => "FEATURE",
+                HIDP_REPORT_TYPE.HidP_Input   => "INPUT",
+                HIDP_REPORT_TYPE.HidP_Output  => "OUTPUT",
+                _                             => ""
+            };
 
-            s.Append(string.Format("\t<{0}>\r\n", sRptType));
+            s.Append($"\t<{sRptType}>\r\n");
             //s.Append(string.Format("\t\tReportID=\"{0}\"\r\n", _ReportID));
-            s.Append(string.Format("\t\tRptByteLen=\"{0}\"\r\n", RptByteLen));
+            s.Append($"\t\tRptByteLen=\"{RptByteLen}\"\r\n");
 
-            s.Append(string.Format("\t\tButtons=\"{0}\"\r\n", _NumBtnCaps));
-            s.Append(string.Format("\t\tValues=\"{0}\"\r\n", _NumValues));
+            s.Append($"\t\tButtons=\"{_NumBtnCaps}\"\r\n");
+            s.Append($"\t\tValues=\"{_NumValues}\"\r\n");
 
             if (NumBtnCaps > 0)
-                foreach (CyHidButton btn in Buttons)
+                foreach (var btn in Buttons)
                     s.Append(btn.ToString());
 
             if (NumValCaps > 0)
-                foreach (CyHidValue val in Values)
+                foreach (var val in Values)
                     s.Append(val.ToString());
 
-            s.Append(string.Format("\t</{0}>\r\n", sRptType));
+            s.Append($"\t</{sRptType}>\r\n");
 
             return s.ToString();
         }
@@ -335,128 +328,71 @@ namespace CyUSB
             Caps = bc;
         }
 
-        public ushort ReportID
-        {
-            get { return Caps.ReportID; }
-        }
+        public ushort ReportID => Caps.ReportID;
 
-        public ushort BitField
-        {
-            get { return Caps.BitField; }
-        }
+        public ushort BitField => Caps.BitField;
 
-        public ushort LinkUsage
-        {
-            get { return Caps.LinkUsage; }
-        }
+        public ushort LinkUsage => Caps.LinkUsage;
 
-        public ushort LinkUsagePage
-        {
-            get { return Caps.LinkUsagePage; }
-        }
+        public ushort LinkUsagePage => Caps.LinkUsagePage;
 
-        public ushort LinkCollection
-        {
-            get { return Caps.LinkCollection; }
-        }
+        public ushort LinkCollection => Caps.LinkCollection;
 
-        public ushort DataIndex
-        {
-            get { return Caps.DataIndex; }
-        }
+        public ushort DataIndex => Caps.DataIndex;
 
-        public ushort DataIndexMax
-        {
-            get { return Caps.DataIndexMax; }
-        }
+        public ushort DataIndexMax => Caps.DataIndexMax;
 
-        public ushort StringIndex
-        {
-            get { return Caps.StringIndex; }
-        }
+        public ushort StringIndex => Caps.StringIndex;
 
-        public ushort StringMax
-        {
-            get { return Caps.StringMax; }
-        }
+        public ushort StringMax => Caps.StringMax;
 
-        public ushort DesignatorIndex
-        {
-            get { return Caps.DesignatorIndex; }
-        }
+        public ushort DesignatorIndex => Caps.DesignatorIndex;
 
-        public ushort DesignatorIndexMax
-        {
-            get { return Caps.DesignatorMax; }
-        }
+        public ushort DesignatorIndexMax => Caps.DesignatorMax;
 
-        public ushort Usage
-        {
-            get { return Caps.Usage; }
-        }
+        public ushort Usage => Caps.Usage;
 
-        public ushort UsagePage
-        {
-            get { return Caps.UsagePage; }
-        }
+        public ushort UsagePage => Caps.UsagePage;
 
-        public ushort UsageMax
-        {
-            get { return Caps.UsageMax; }
-        }
+        public ushort UsageMax => Caps.UsageMax;
 
-        public bool IsAlias
-        {
-            get { return Caps.IsAlias > 0; }
-        }
+        public bool IsAlias => Caps.IsAlias > 0;
 
-        public bool IsRange
-        {
-            get { return Caps.IsRange > 0; }
-        }
+        public bool IsRange => Caps.IsRange > 0;
 
-        public bool IsStringRange
-        {
-            get { return Caps.IsStringRange > 0; }
-        }
+        public bool IsStringRange => Caps.IsStringRange > 0;
 
-        public bool IsDesignatorRange
-        {
-            get { return Caps.IsDesignatorRange > 0; }
-        }
+        public bool IsDesignatorRange => Caps.IsDesignatorRange > 0;
 
-        public bool IsAbsolute
-        {
-            get { return Caps.IsAbsolute > 0; }
-        }
+        public bool IsAbsolute => Caps.IsAbsolute > 0;
 
         public override string ToString()
         {
-            StringBuilder s = new StringBuilder();
+            var s = new StringBuilder();
 
             s.Append(string.Format("\t\t<BUTTON>\r\n"));
-            s.Append(string.Format("\t\t\tReportID=\"{0}\"\r\n", Caps.ReportID));
-            s.Append(string.Format("\t\t\tUsage=\"{0}\"\r\n", Util.byteStr(Caps.Usage)));
-            s.Append(string.Format("\t\t\tUsagePage=\"{0}\"\r\n", Util.byteStr(Caps.UsagePage)));
-            s.Append(string.Format("\t\t\tUsageMax=\"{0}\"\r\n", Util.byteStr(Caps.UsageMax)));
+            s.Append($"\t\t\tReportID=\"{Caps.ReportID}\"\r\n");
+            s.Append($"\t\t\tUsage=\"{Util.byteStr(Caps.Usage)}\"\r\n");
+            s.Append($"\t\t\tUsagePage=\"{Util.byteStr(Caps.UsagePage)}\"\r\n");
+            s.Append($"\t\t\tUsageMax=\"{Util.byteStr(Caps.UsageMax)}\"\r\n");
 
-            s.Append(string.Format("\t\t\tBitField=\"{0}\"\r\n", Util.byteStr(Caps.BitField)));
-            s.Append(string.Format("\t\t\tLinkCollection=\"{0}\"\r\n", Util.byteStr(Caps.LinkCollection)));
-            s.Append(string.Format("\t\t\tLinkUsage=\"{0}\"\r\n", Util.byteStr(Caps.LinkUsage)));
-            s.Append(string.Format("\t\t\tLinkUsagePage=\"{0}\"\r\n", Util.byteStr(Caps.LinkUsagePage)));
+            s.Append($"\t\t\tBitField=\"{Util.byteStr(Caps.BitField)}\"\r\n");
+            s.Append($"\t\t\tLinkCollection=\"{Util.byteStr(Caps.LinkCollection)}\"\r\n");
+            s.Append($"\t\t\tLinkUsage=\"{Util.byteStr(Caps.LinkUsage)}\"\r\n");
+            s.Append($"\t\t\tLinkUsagePage=\"{Util.byteStr(Caps.LinkUsagePage)}\"\r\n");
 
-            s.Append(string.Format("\t\t\tIsAlias=\"{0}\"\r\n", (Caps.IsAlias > 0)));
-            s.Append(string.Format("\t\t\tIsRange=\"{0}\"\r\n", (Caps.IsRange > 0)));
-            s.Append(string.Format("\t\t\tIsStringRange=\"{0}\"\r\n", (Caps.IsStringRange > 0)));
-            s.Append(string.Format("\t\t\tIsDesignatorRange=\"{0}\"\r\n", (Caps.IsDesignatorRange > 0)));
-            s.Append(string.Format("\t\t\tIsAbsolute=\"{0}\"\r\n", (Caps.IsAbsolute > 0)));
+            s.Append($"\t\t\tIsAlias=\"{Caps.IsAlias                     > 0}\"\r\n");
+            s.Append($"\t\t\tIsRange=\"{Caps.IsRange                     > 0}\"\r\n");
+            s.Append($"\t\t\tIsStringRange=\"{Caps.IsStringRange         > 0}\"\r\n");
+            s.Append($"\t\t\tIsDesignatorRange=\"{Caps.IsDesignatorRange > 0}\"\r\n");
+            s.Append($"\t\t\tIsAbsolute=\"{Caps.IsAbsolute               > 0}\"\r\n");
 
-            s.Append(string.Format("\t\t\tStringIndex=\"{0}\"\r\n", Caps.StringIndex));
-            s.Append(string.Format("\t\t\tStringMax=\"{0}\"\r\n", Caps.StringMax));
-            s.Append(string.Format("\t\t\tDesignatorIndex=\"{0}\"\r\n", Caps.DesignatorIndex));
-            s.Append(string.Format("\t\t\tDesignatorMax=\"{0}\"\r\n", Caps.DesignatorMax));
-            s.Append(string.Format("\t\t\tDataIndex=\"{0}\"\r\n", Caps.DataIndex));
-            s.Append(string.Format("\t\t\tDataIndexMax=\"{0}\"\r\n", Caps.DataIndexMax));
+            s.Append($"\t\t\tStringIndex=\"{Caps.StringIndex}\"\r\n");
+            s.Append($"\t\t\tStringMax=\"{Caps.StringMax}\"\r\n");
+            s.Append($"\t\t\tDesignatorIndex=\"{Caps.DesignatorIndex}\"\r\n");
+            s.Append($"\t\t\tDesignatorMax=\"{Caps.DesignatorMax}\"\r\n");
+            s.Append($"\t\t\tDataIndex=\"{Caps.DataIndex}\"\r\n");
+            s.Append($"\t\t\tDataIndexMax=\"{Caps.DataIndexMax}\"\r\n");
             s.Append(string.Format("\t\t</BUTTON>\r\n"));
 
             return s.ToString();
@@ -472,89 +408,65 @@ namespace CyUSB
         {
         }
 
-        public ushort BitSize
-        {
-            get { return Caps.BitSize; }
-        }
+        public ushort BitSize => Caps.BitSize;
 
-        public bool HasNull
-        {
-            get { return Caps.HasNull > 0; }
-        }
+        public bool HasNull => Caps.HasNull > 0;
 
-        public uint Units
-        {
-            get { return Caps.Units; }
-        }
+        public uint Units => Caps.Units;
 
-        public uint UnitsExp
-        {
-            get { return Caps.UnitsExp; }
-        }
+        public uint UnitsExp => Caps.UnitsExp;
 
-        public int LogicalMin
-        {
-            get { return Caps.LogicalMin; }
-        }
+        public int LogicalMin => Caps.LogicalMin;
 
-        public int LogicalMax
-        {
-            get { return Caps.LogicalMax; }
-        }
+        public int LogicalMax => Caps.LogicalMax;
 
-        public int PhysicalMin
-        {
-            get { return Caps.PhysicalMin; }
-        }
+        public int PhysicalMin => Caps.PhysicalMin;
 
-        public int PhysicalMax
-        {
-            get { return Caps.PhysicalMax; }
-        }
+        public int PhysicalMax => Caps.PhysicalMax;
 
         public override string ToString()
         {
-            StringBuilder s = new StringBuilder();
+            var s = new StringBuilder();
 
             s.Append(string.Format("\t\t<VALUE>\r\n"));
-            s.Append(string.Format("\t\t\tReportID=\"{0}\"\r\n", Caps.ReportID));
-            s.Append(string.Format("\t\t\tUsage=\"{0}\"\r\n", Util.byteStr(Caps.Usage)));
-            s.Append(string.Format("\t\t\tUsagePage=\"{0}\"\r\n", Util.byteStr(Caps.UsagePage)));
-            s.Append(string.Format("\t\t\tUsageMax=\"{0}\"\r\n", Util.byteStr(Caps.UsageMax)));
+            s.Append($"\t\t\tReportID=\"{Caps.ReportID}\"\r\n");
+            s.Append($"\t\t\tUsage=\"{Util.byteStr(Caps.Usage)}\"\r\n");
+            s.Append($"\t\t\tUsagePage=\"{Util.byteStr(Caps.UsagePage)}\"\r\n");
+            s.Append($"\t\t\tUsageMax=\"{Util.byteStr(Caps.UsageMax)}\"\r\n");
 
-            s.Append(string.Format("\t\t\tBitField=\"{0}\"\r\n", Util.byteStr(Caps.BitField)));
-            s.Append(string.Format("\t\t\tLinkCollection=\"{0}\"\r\n", Util.byteStr(Caps.LinkCollection)));
-            s.Append(string.Format("\t\t\tLinkUsage=\"{0}\"\r\n", Util.byteStr(Caps.LinkUsage)));
-            s.Append(string.Format("\t\t\tLinkUsagePage=\"{0}\"\r\n", Util.byteStr(Caps.LinkUsagePage)));
+            s.Append($"\t\t\tBitField=\"{Util.byteStr(Caps.BitField)}\"\r\n");
+            s.Append($"\t\t\tLinkCollection=\"{Util.byteStr(Caps.LinkCollection)}\"\r\n");
+            s.Append($"\t\t\tLinkUsage=\"{Util.byteStr(Caps.LinkUsage)}\"\r\n");
+            s.Append($"\t\t\tLinkUsagePage=\"{Util.byteStr(Caps.LinkUsagePage)}\"\r\n");
 
-            s.Append(string.Format("\t\t\tIsAlias=\"{0}\"\r\n", (Caps.IsAlias > 0)));
-            s.Append(string.Format("\t\t\tIsRange=\"{0}\"\r\n", (Caps.IsRange > 0)));
-            s.Append(string.Format("\t\t\tIsStringRange=\"{0}\"\r\n", (Caps.IsStringRange > 0)));
-            s.Append(string.Format("\t\t\tIsDesignatorRange=\"{0}\"\r\n", (Caps.IsDesignatorRange > 0)));
-            s.Append(string.Format("\t\t\tIsAbsolute=\"{0}\"\r\n", (Caps.IsAbsolute > 0)));
-            s.Append(string.Format("\t\t\tHasNull=\"{0}\"\r\n", (Caps.HasNull > 0)));
+            s.Append($"\t\t\tIsAlias=\"{Caps.IsAlias                     > 0}\"\r\n");
+            s.Append($"\t\t\tIsRange=\"{Caps.IsRange                     > 0}\"\r\n");
+            s.Append($"\t\t\tIsStringRange=\"{Caps.IsStringRange         > 0}\"\r\n");
+            s.Append($"\t\t\tIsDesignatorRange=\"{Caps.IsDesignatorRange > 0}\"\r\n");
+            s.Append($"\t\t\tIsAbsolute=\"{Caps.IsAbsolute               > 0}\"\r\n");
+            s.Append($"\t\t\tHasNull=\"{Caps.HasNull                     > 0}\"\r\n");
 
-            s.Append(string.Format("\t\t\tStringIndex=\"{0}\"\r\n", Caps.StringIndex));
-            s.Append(string.Format("\t\t\tStringMax=\"{0}\"\r\n", Caps.StringMax));
-            s.Append(string.Format("\t\t\tDesignatorIndex=\"{0}\"\r\n", Caps.DesignatorIndex));
-            s.Append(string.Format("\t\t\tDesignatorMax=\"{0}\"\r\n", Caps.DesignatorMax));
-            s.Append(string.Format("\t\t\tDataIndex=\"{0}\"\r\n", Caps.DataIndex));
-            s.Append(string.Format("\t\t\tDataIndexMax=\"{0}\"\r\n", Caps.DataIndexMax));
+            s.Append($"\t\t\tStringIndex=\"{Caps.StringIndex}\"\r\n");
+            s.Append($"\t\t\tStringMax=\"{Caps.StringMax}\"\r\n");
+            s.Append($"\t\t\tDesignatorIndex=\"{Caps.DesignatorIndex}\"\r\n");
+            s.Append($"\t\t\tDesignatorMax=\"{Caps.DesignatorMax}\"\r\n");
+            s.Append($"\t\t\tDataIndex=\"{Caps.DataIndex}\"\r\n");
+            s.Append($"\t\t\tDataIndexMax=\"{Caps.DataIndexMax}\"\r\n");
 
-            s.Append(string.Format("\t\t\tBitField=\"{0}\"\r\n", Util.byteStr(Caps.BitField)));
-            s.Append(string.Format("\t\t\tLinkCollection=\"{0}\"\r\n", Util.byteStr(Caps.LinkCollection)));
-            s.Append(string.Format("\t\t\tLinkUsage=\"{0}\"\r\n", Util.byteStr(Caps.LinkUsage)));
-            s.Append(string.Format("\t\t\tLinkUsagePage=\"{0}\"\r\n", Util.byteStr(Caps.LinkUsagePage)));
+            s.Append($"\t\t\tBitField=\"{Util.byteStr(Caps.BitField)}\"\r\n");
+            s.Append($"\t\t\tLinkCollection=\"{Util.byteStr(Caps.LinkCollection)}\"\r\n");
+            s.Append($"\t\t\tLinkUsage=\"{Util.byteStr(Caps.LinkUsage)}\"\r\n");
+            s.Append($"\t\t\tLinkUsagePage=\"{Util.byteStr(Caps.LinkUsagePage)}\"\r\n");
 
-            s.Append(string.Format("\t\t\tBitSize=\"{0}\"\r\n", Caps.BitSize));
-            s.Append(string.Format("\t\t\tReportCount=\"{0}\"\r\n", Caps.ReportCount));
-            s.Append(string.Format("\t\t\tUnits=\"{0}\"\r\n", Caps.Units));
-            s.Append(string.Format("\t\t\tUnitsExp=\"{0}\"\r\n", Caps.UnitsExp));
+            s.Append($"\t\t\tBitSize=\"{Caps.BitSize}\"\r\n");
+            s.Append($"\t\t\tReportCount=\"{Caps.ReportCount}\"\r\n");
+            s.Append($"\t\t\tUnits=\"{Caps.Units}\"\r\n");
+            s.Append($"\t\t\tUnitsExp=\"{Caps.UnitsExp}\"\r\n");
 
-            s.Append(string.Format("\t\t\tLogicalMin=\"{0}\"\r\n", Caps.LogicalMin));
-            s.Append(string.Format("\t\t\tLogicalMax=\"{0}\"\r\n", Caps.LogicalMax));
-            s.Append(string.Format("\t\t\tPhysicalMin=\"{0}\"\r\n", Caps.PhysicalMin));
-            s.Append(string.Format("\t\t\tPhysicalMax=\"{0}\"\r\n", Caps.PhysicalMax));
+            s.Append($"\t\t\tLogicalMin=\"{Caps.LogicalMin}\"\r\n");
+            s.Append($"\t\t\tLogicalMax=\"{Caps.LogicalMax}\"\r\n");
+            s.Append($"\t\t\tPhysicalMin=\"{Caps.PhysicalMin}\"\r\n");
+            s.Append($"\t\t\tPhysicalMax=\"{Caps.PhysicalMax}\"\r\n");
 
             s.Append(string.Format("\t\t</VALUE>\r\n"));
 

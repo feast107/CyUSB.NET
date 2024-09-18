@@ -65,7 +65,7 @@ namespace CyUSB
         {
             get
             {
-                string s = "";
+                var s = "";
 
                 foreach (string line in VendAX)
                     s += line + "\r\n";
@@ -81,7 +81,7 @@ namespace CyUSB
 
                 string line;
 
-                StreamReader srcStream = new StreamReader(value);
+                var srcStream = new StreamReader(value);
                 if (srcStream == null) return;
                 while ((line = srcStream.ReadLine()) != null)
                     VendAX.Add(line);
@@ -143,7 +143,7 @@ namespace CyUSB
 
         private bool LoadRamHex(string fname, bool blow)
         {
-            TTransaction m_Xaction = new TTransaction();
+            var m_Xaction = new TTransaction();
 
             list.Clear();
             list1.Clear();
@@ -151,8 +151,8 @@ namespace CyUSB
             string line, sOffset, tmp;
             int v;
 
-            FileStream fs = new FileStream(fname, FileMode.Open, FileAccess.Read);
-            StreamReader sr = new StreamReader(fs);
+            var fs = new FileStream(fname, FileMode.Open, FileAccess.Read);
+            var sr = new StreamReader(fs);
             while (!sr.EndOfStream)
             {
                 list.Add(sr.ReadLine());
@@ -160,10 +160,10 @@ namespace CyUSB
             sr.Close();
             fs.Close();
 
-            int Ramsize = 0x4000;
+            var Ramsize = 0x4000;
 
             // Delete non-data records
-            for (int i = list.Count - 1; i >= 0; i--)
+            for (var i = list.Count - 1; i >= 0; i--)
             {
                 line = (string)list[i];
                 if (line.Length > 0)
@@ -174,7 +174,7 @@ namespace CyUSB
                 }
             }
 
-            for (int i = 0; i < list.Count; i++)
+            for (var i = 0; i < list.Count; i++)
             {
                 line = (string)list[i];
 
@@ -192,7 +192,7 @@ namespace CyUSB
                     // Get the string of data chars
                     tmp = line.Substring(1, 2);
                     v = (int)Util.HexToInt(tmp) * 2;
-                    string s = line.Substring(9, v);
+                    var s = line.Substring(9, v);
 
                     list1.Add(sOffset + s);
                 }
@@ -201,24 +201,24 @@ namespace CyUSB
 
             if (blow) Reset(1);
 
-            byte Reqcode = blow ? (byte)0xA0 : (byte)0xA3;
+            var Reqcode = blow ? (byte)0xA0 : (byte)0xA3;
             ushort windex = 0;
 
-            int iindex = 0;
-            string Datastring = "";
-            int nxtoffset = 0;
-            int xferLen = 0;
+            var iindex = 0;
+            var Datastring = "";
+            var nxtoffset = 0;
+            var xferLen = 0;
             ushort wvalue = 0;
 
             foreach (string lines in list1)
             {
                 line = lines.Substring(0, 4);
-                ushort offset = (ushort)Util.HexToInt(line);
+                var offset = (ushort)Util.HexToInt(line);
 
-                int slen = lines.Length;
+                var slen = lines.Length;
 
-                int no_bytes = (slen - 4) / 2;
-                int lastaddr = offset + no_bytes;
+                var no_bytes = (slen - 4) / 2;
+                var lastaddr = offset + no_bytes;
 
                 //if (blow && (offset < Ramsize) && (lastaddr > Ramsize))
                 //    no_bytes = Ramsize - offset;
@@ -234,26 +234,26 @@ namespace CyUSB
                 //}
 
                 //if ((blow && (offset < Ramsize)) || (!blow && (offset >= Ramsize)))
-                if ((blow && (lastaddr < Ramsize)) || (!blow && (lastaddr >= Ramsize)))
+                if ((blow && lastaddr < Ramsize) || (!blow && lastaddr >= Ramsize))
                 {
                     xferLen += no_bytes;
 
-                    if ((offset == nxtoffset) && (xferLen < 0x1000))
+                    if (offset == nxtoffset && xferLen < 0x1000)
                     {
                         Datastring += lines.Substring(4, no_bytes * 2);
                     }
                     else
                     {
-                        int len = Datastring.Length;
+                        var len = Datastring.Length;
 
 
                         if (!len.Equals(0))
                         {
-                            int bufLen = len / 2;
-                            byte[] buf = new byte[bufLen];
+                            var bufLen = len / 2;
+                            var buf = new byte[bufLen];
                             string d;
 
-                            for (int j = 0; j < bufLen; j++)
+                            for (var j = 0; j < bufLen; j++)
                             {
                                 d = Datastring.Substring(j * 2, 2);
                                 buf[j] = (byte)Util.HexToInt(d);
@@ -267,7 +267,7 @@ namespace CyUSB
                             ControlEndPt.Index = windex;
 
                             ControlEndPt.Write(ref buf, ref bufLen);
-                            if (m_bRecording && (m_script_file_name != null))
+                            if (m_bRecording && m_script_file_name != null)
                             {
                                 m_Xaction.AltIntfc = m_AltIntfc;
                                 m_Xaction.ConfigNum = m_ConfigNum;
@@ -300,14 +300,14 @@ namespace CyUSB
                 iindex++;
             }
 
-            int len1 = Datastring.Length;
+            var len1 = Datastring.Length;
             if (!len1.Equals(0))
             {
-                int bufLen = len1 / 2;
-                byte[] buf1 = new byte[bufLen];
+                var bufLen = len1 / 2;
+                var buf1 = new byte[bufLen];
                 string d;
 
-                for (int j = 0; j < bufLen; j++)
+                for (var j = 0; j < bufLen; j++)
                 {
                     d = Datastring.Substring(j * 2, 2);
                     buf1[j] = (byte)Util.HexToInt(d);
@@ -323,7 +323,7 @@ namespace CyUSB
 
                 ControlEndPt.Write(ref buf1, ref bufLen);
 
-                if (m_bRecording && (m_script_file_name != null))
+                if (m_bRecording && m_script_file_name != null)
                 {
                     m_Xaction.AltIntfc = m_AltIntfc;
                     m_Xaction.ConfigNum = m_ConfigNum;
@@ -364,8 +364,8 @@ namespace CyUSB
 
         public void Reset(int hold)
         {
-            TTransaction m_FXaction = new TTransaction();
-            byte[] dta = new byte[8];
+            var m_FXaction = new TTransaction();
+            var dta = new byte[8];
 
             ControlEndPt.Target = CyConst.TGT_DEVICE;
             ControlEndPt.ReqType = CyConst.REQ_VENDOR;
@@ -374,10 +374,10 @@ namespace CyUSB
 
             ControlEndPt.ReqCode = 0xA0;
             dta[0] = (byte)hold;
-            int len = 1;
+            var len = 1;
             ControlEndPt.Write(ref dta, ref len);
             len = 1;
-            if (m_bRecording && (m_script_file_name != null))
+            if (m_bRecording && m_script_file_name != null)
             {
                 m_FXaction.AltIntfc = m_AltIntfc;
                 m_FXaction.ConfigNum = m_ConfigNum;
@@ -429,9 +429,9 @@ namespace CyUSB
 
         private bool LoadRamHex(string fileName)
         {
-            TTransaction m_Xaction = new TTransaction();
+            var m_Xaction = new TTransaction();
             // A .hex file is already in the correct format for the FX2 RAM
-            bool rVal = false;
+            var rVal = false;
 
             if (fileName == "VendAX")
                 rVal = Util.ParseHexData(VendAX, FwImage, ref ImageLen, ref FwOffset);
@@ -448,17 +448,17 @@ namespace CyUSB
                 Reset(1); // Halt
 
                 ushort chunk = 2048;
-                byte[] buffer = new byte[chunk];
+                var buffer = new byte[chunk];
 
-                for (ushort i = FwOffset; i < ImageLen; i += chunk)
+                for (var i = FwOffset; i < ImageLen; i += chunk)
                 {
                     ControlEndPt.Value = i;
-                    int len = ((i + chunk) < ImageLen) ? chunk : ImageLen - i;
+                    var len = i + chunk < ImageLen ? chunk : ImageLen - i;
                     Array.Copy(FwImage, i, buffer, 0, len);
 
                     ControlEndPt.Write(ref buffer, ref len);
 
-                    if (m_bRecording && (m_script_file_name != null))
+                    if (m_bRecording && m_script_file_name != null)
                     {
                         m_Xaction.AltIntfc = m_AltIntfc;
                         m_Xaction.ConfigNum = m_ConfigNum;
@@ -495,15 +495,15 @@ namespace CyUSB
         private bool LoadRamIIC(string fwFile)
         {
             // Need to do this here, since FwImage contains VendAX at this point.
-            for (int i = 0; i < Util.MaxFwSize; i++) FwImage[i] = 0xFF;
+            for (var i = 0; i < Util.MaxFwSize; i++) FwImage[i] = 0xFF;
 
             ReadConfigData(fwFile);
 
             // FwImage holds the file contents, suitable for the EEPROM
             // Now, parse it into FwBuf, putting each record at the right offset,
             // suitable for the FX2 RAM
-            byte[] FwBuf = new byte[Util.MaxFwSize];
-            for (int i = 0; i < Util.MaxFwSize; i++) FwBuf[i] = 0xFF;
+            var FwBuf = new byte[Util.MaxFwSize];
+            for (var i = 0; i < Util.MaxFwSize; i++) FwBuf[i] = 0xFF;
             Util.ParseIICData(FwImage, FwBuf, ref ImageLen, ref FwOffset);
 
             ControlEndPt.Target = CyConst.TGT_DEVICE;
@@ -514,12 +514,12 @@ namespace CyUSB
             Reset(1); // Halt
 
             ushort chunk = 2048;
-            byte[] buffer = new byte[chunk];
+            var buffer = new byte[chunk];
 
-            for (ushort i = FwOffset; i < ImageLen; i += chunk)
+            for (var i = FwOffset; i < ImageLen; i += chunk)
             {
                 ControlEndPt.Value = i;
-                int len = ((i + chunk) < ImageLen) ? chunk : ImageLen - i;
+                var len = i + chunk < ImageLen ? chunk : ImageLen - i;
                 Array.Copy(FwBuf, i, buffer, 0, len);
 
                 if (!ControlEndPt.Write(ref buffer, ref len))
@@ -536,7 +536,7 @@ namespace CyUSB
         private bool LoadEpromIIC(string fwFile, bool isLargeEEprom)
         {
             // Need to do this here, since FwImage contains VendAX at this point.
-            for (int i = 0; i < Util.MaxFwSize; i++) FwImage[i] = 0xFF;
+            for (var i = 0; i < Util.MaxFwSize; i++) FwImage[i] = 0xFF;
 
             if (!ReadConfigData(fwFile))
                 return false;
@@ -555,16 +555,16 @@ namespace CyUSB
 
             ControlEndPt.Index = 0;
 
-            uint toTemp = ControlEndPt.TimeOut;
+            var toTemp = ControlEndPt.TimeOut;
             ControlEndPt.TimeOut = 25000;
 
             ushort chunk = 4096;
-            byte[] buffer = new byte[chunk];
+            var buffer = new byte[chunk];
 
             for (ushort i = 0; i < ImageLen; i += chunk)
             {
                 ControlEndPt.Value = i;
-                int len = ((i + chunk) < ImageLen) ? chunk : ImageLen - i;
+                var len = i + chunk < ImageLen ? chunk : ImageLen - i;
 
                 Array.Copy(FwImage, i, buffer, 0, len);
                 if (!ControlEndPt.Write(ref buffer, ref len))
@@ -589,21 +589,21 @@ namespace CyUSB
             else
                 ControlEndPt.ReqCode = CyConst.SMALLEEPROM_FW_VERIFIATIONCODE;
 
-            uint toTemp = ControlEndPt.TimeOut;
+            var toTemp = ControlEndPt.TimeOut;
             ControlEndPt.TimeOut = 25000;
 
             ushort chunk = 4096;
-            byte[] buffer = new byte[chunk];
+            var buffer = new byte[chunk];
 
             for (ushort i = 0; i < ImageLen; i += chunk)
             {
                 ControlEndPt.Value = i;
-                int len = ((i + chunk) < ImageLen) ? chunk : ImageLen - i;
+                var len = i + chunk < ImageLen ? chunk : ImageLen - i;
 
                 if (!ControlEndPt.Read(ref buffer, ref len))
                     return false;
 
-                for (int b = 0; b < len; b++)
+                for (var b = 0; b < len; b++)
                     if (buffer[b] != FwImage[b + i])
                         return false;
             }

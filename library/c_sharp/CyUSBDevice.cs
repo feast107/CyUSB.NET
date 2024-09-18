@@ -74,25 +74,29 @@ namespace CyUSB
 
                 if ((_bcdUSB & CyConst.bcdUSBJJMask) == CyConst.USB30MajorVer)
                 {
-                    int NumberOftreeNode = _configs + 1;//+1 for the BOS descriptor
-                    TreeNode[] cfgTree = new TreeNode[NumberOftreeNode];
+                    var NumberOftreeNode = _configs + 1;//+1 for the BOS descriptor
+                    var cfgTree = new TreeNode[NumberOftreeNode];
                     cfgTree[0] = USBBos.Tree;
-                    for (int i = 1; i < NumberOftreeNode; i++)
-                        cfgTree[i] = USBCfgs[(i - 1)].Tree;
+                    for (var i = 1; i < NumberOftreeNode; i++)
+                        cfgTree[i] = USBCfgs[i - 1].Tree;
 
-                    TreeNode t = new TreeNode(FriendlyName, cfgTree);
-                    t.Tag = this;
+                    var t = new TreeNode(FriendlyName, cfgTree)
+                    {
+                        Tag = this
+                    };
                     return t;
                 }
                 else
                 {
 
-                    TreeNode[] cfgTree = new TreeNode[_configs];
-                    for (int i = 0; i < _configs; i++)
+                    var cfgTree = new TreeNode[_configs];
+                    for (var i = 0; i < _configs; i++)
                         cfgTree[i] = USBCfgs[i].Tree;
 
-                    TreeNode t = new TreeNode(FriendlyName, cfgTree);
-                    t.Tag = this;
+                    var t = new TreeNode(FriendlyName, cfgTree)
+                    {
+                        Tag = this
+                    };
                     return t;
                 }
 
@@ -103,31 +107,31 @@ namespace CyUSB
         {
             if (_alreadyDisposed) throw new ObjectDisposedException("");
 
-            StringBuilder s = new StringBuilder("<DEVICE>\r\n");
+            var s = new StringBuilder("<DEVICE>\r\n");
 
-            s.Append(string.Format("\tFriendlyName=\"{0}\"\r\n", FriendlyName));
-            s.Append(string.Format("\tManufacturer=\"{0}\"\r\n", Manufacturer));
-            s.Append(string.Format("\tProduct=\"{0}\"\r\n", Product));
-            s.Append(string.Format("\tSerialNumber=\"{0}\"\r\n", SerialNumber));
-            s.Append(string.Format("\tConfigurations=\"{0}\"\r\n", ConfigCount));
+            s.Append($"\tFriendlyName=\"{FriendlyName}\"\r\n");
+            s.Append($"\tManufacturer=\"{Manufacturer}\"\r\n");
+            s.Append($"\tProduct=\"{Product}\"\r\n");
+            s.Append($"\tSerialNumber=\"{SerialNumber}\"\r\n");
+            s.Append($"\tConfigurations=\"{ConfigCount}\"\r\n");
 
             //if ((_bcdUSB & CyConst.bcdUSBJJMask) == CyConst.USB20MajorVer)
-            s.Append(string.Format("\tMaxPacketSize=\"{0}\"\r\n", MaxPacketSize));
+            s.Append($"\tMaxPacketSize=\"{MaxPacketSize}\"\r\n");
             //else
             //  s.Append(string.Format("\tMaxPacketSize=\"{0}\"\r\n", powerof2(MaxPacketSize))); // USB3.0 EP0 packet size = 2^maximumpacketsize
 
-            s.Append(string.Format("\tVendorID=\"{0}\"\r\n", Util.byteStr(VendorID)));
-            s.Append(string.Format("\tProductID=\"{0}\"\r\n", Util.byteStr(ProductID)));
-            s.Append(string.Format("\tClass=\"{0:X2}h\"\r\n", _devClass));
-            s.Append(string.Format("\tSubClass=\"{0:X2}h\"\r\n", _devSubClass));
-            s.Append(string.Format("\tProtocol=\"{0:X2}h\"\r\n", _devProtocol));
-            s.Append(string.Format("\tBcdDevice=\"{0}\"\r\n", Util.byteStr(_bcdDevice)));
-            s.Append(string.Format("\tBcdUSB=\"{0}\"\r\n", Util.byteStr(_bcdUSB)));
+            s.Append($"\tVendorID=\"{Util.byteStr(VendorID)}\"\r\n");
+            s.Append($"\tProductID=\"{Util.byteStr(ProductID)}\"\r\n");
+            s.Append($"\tClass=\"{_devClass:X2}h\"\r\n");
+            s.Append($"\tSubClass=\"{_devSubClass:X2}h\"\r\n");
+            s.Append($"\tProtocol=\"{_devProtocol:X2}h\"\r\n");
+            s.Append($"\tBcdDevice=\"{Util.byteStr(_bcdDevice)}\"\r\n");
+            s.Append($"\tBcdUSB=\"{Util.byteStr(_bcdUSB)}\"\r\n");
 
             if ((_bcdUSB & CyConst.bcdUSBJJMask) == CyConst.USB30MajorVer)
                 s.Append(USBBos.ToString());
 
-            for (int i = 0; i < ConfigCount; i++)
+            for (var i = 0; i < ConfigCount; i++)
                 s.Append(USBCfgs[i].ToString());
 
             s.Append("</DEVICE>\r\n");
@@ -322,7 +326,7 @@ namespace CyUSB
             get
             {
                 if (_alreadyDisposed) throw new ObjectDisposedException("");
-                byte[] alt = new byte[1];
+                var alt = new byte[1];
                 if (IoControl(CyConst.IOCTL_ADAPT_GET_ALT_INTERFACE_SETTING, alt, 1))
                     return alt[0];
                 else
@@ -341,13 +345,13 @@ namespace CyUSB
                 // Find match of IntfcNum and alt in table of interfaces
                 if (USBCfgs[_cfgNum] != null)
                 {
-                    for (int j = 0; j < USBCfgs[_cfgNum].AltInterfaces; j++)
+                    for (var j = 0; j < USBCfgs[_cfgNum].AltInterfaces; j++)
                         if (USBCfgs[_cfgNum].Interfaces[j].bAlternateSetting == value)
                         {
                             _intfcIndex = (byte)j;
 
                             // Actually change to the alt interface, calling the driver
-                            byte[] alt = new byte[1];
+                            var alt = new byte[1];
                             alt[0] = value;
                             IoControl(CyConst.IOCTL_ADAPT_SELECT_INTERFACE, alt, 1);
 
@@ -394,8 +398,8 @@ namespace CyUSB
                 if (USBCfgs[0] == null) return;
 
                 _cfgNum = 0;
-                if ((USBCfgs[0] != null) && (USBCfgs[0].iConfiguration == value)) _cfgNum = value;
-                if ((USBCfgs[1] != null) && (USBCfgs[1].iConfiguration == value)) _cfgNum = value;
+                if (USBCfgs[0] != null && USBCfgs[0].iConfiguration == value) _cfgNum = value;
+                if (USBCfgs[1] != null && USBCfgs[1].iConfiguration == value) _cfgNum = value;
 
                 _configValue = USBCfgs[_cfgNum].bConfigurationValue;
                 _configAttrib = USBCfgs[_cfgNum].bmAttributes;
@@ -404,7 +408,7 @@ namespace CyUSB
                 _altInterfaces = USBCfgs[_cfgNum].AltInterfaces;
                 _intfcNum = USBCfgs[_cfgNum].Interfaces[0].bInterfaceNumber;
 
-                byte a = AltIntfc;  // Get the current alt setting from the device
+                var a = AltIntfc;  // Get the current alt setting from the device
                 SetAltIntfcParams(a);   // Initializes endpts, IntfcIndex, etc. without actually setting the AltInterface
 
                 if (USBCfgs[_cfgNum].Interfaces[_intfcIndex] != null)
@@ -446,11 +450,11 @@ namespace CyUSB
 
         public static string UsbdStatusString(UInt32 stat)
         {
-            UInt32 status = stat & 0x0FFFFFFF;
-            UInt32 state = stat & 0xF0000000;
+            var status = stat & 0x0FFFFFFF;
+            var state = stat & 0xF0000000;
 
-            string sState = "";
-            string sStatus = "";
+            var sState = "";
+            var sStatus = "";
 
             if (status == 0)
             {
@@ -520,7 +524,7 @@ namespace CyUSB
 
             int n = EndPointCount;
 
-            for (int i = 0; i < n; i++)
+            for (var i = 0; i < n; i++)
             {
                 ept = USBCfgs[_cfgNum].Interfaces[_intfcIndex].EndPoints[i];
 
@@ -542,7 +546,7 @@ namespace CyUSB
 
             _devices = DeviceCount;
             if (_devices == 0) return false;
-            if (dev > (_devices - 1)) return false;
+            if (dev      > _devices - 1) return false;
 
             _path = PInvoke.GetDevicePath(_drvGuid, dev);
             _hDevice = PInvoke.GetDeviceHandle(_path, true);
@@ -589,7 +593,7 @@ namespace CyUSB
             ControlEndPt = new CyControlEndPoint(_hDevice, _maxPacketSize);
 
             // Gets and parses the config (including interface and endpoint) descriptors from the device
-            for (int i = 0; i < _configs; i++)
+            for (var i = 0; i < _configs; i++)
             {
                 GetCfgDescriptor(i);
                 try
@@ -618,7 +622,7 @@ namespace CyUSB
             // we want to leave the hDevice intact, giving the user the opportunity
             // to call the Reset( ) method
 
-            if ((USBCfgs[0] == null) || (USBCfgs[0].Interfaces[0] == null)) return false;
+            if (USBCfgs[0] == null || USBCfgs[0].Interfaces[0] == null) return false;
 
             if (!_nullEndpointFlag)
             {
@@ -662,7 +666,7 @@ namespace CyUSB
             get
             {
                 if (_alreadyDisposed) throw new ObjectDisposedException("");
-                return (_hDevice != CyConst.INVALID_HANDLE);
+                return _hDevice != CyConst.INVALID_HANDLE;
             }
         }
 
@@ -696,7 +700,7 @@ namespace CyUSB
 
             return true;
         }
-        unsafe public bool GetBosContainedIDDescriptor(ref USB_BOS_CONTAINER_ID descr)
+        public unsafe bool GetBosContainedIDDescriptor(ref USB_BOS_CONTAINER_ID descr)
         {// USB3.0 device specific descriptor, for USB2.0 device this function will return false            
             if (_alreadyDisposed) throw new ObjectDisposedException("");
             if ((_bcdUSB & CyConst.bcdUSBJJMask) != CyConst.USB30MajorVer)
@@ -760,7 +764,7 @@ namespace CyUSB
         public void GetIntfcDescriptor(ref USB_INTERFACE_DESCRIPTOR descr)
         {
             if (_alreadyDisposed) throw new ObjectDisposedException("");
-            CyUSBInterface i = USBCfgs[_cfgNum].Interfaces[_intfcIndex];
+            var i = USBCfgs[_cfgNum].Interfaces[_intfcIndex];
 
             // Copy the internal private data to the passed parameter
             descr.bLength = i.bLength;
@@ -777,13 +781,13 @@ namespace CyUSB
         public unsafe bool CheckDeviceTypeFX3FX2()
         {//return value true : fx2, false:fx3
 
-            int len = 39;									// total size of buffer
-            byte[] buffer = new byte[len];
+            var len = 39;									// total size of buffer
+            var buffer = new byte[len];
             bool bRetVal;
 
             fixed (byte* buf = buffer)
             {
-                SINGLE_TRANSFER* transfer = (SINGLE_TRANSFER*)buf;
+                var transfer = (SINGLE_TRANSFER*)buf;
                 transfer->SetupPacket.bmRequest = CyConst.TGT_DEVICE | CyConst.REQ_VENDOR | CyConst.DIR_FROM_DEVICE;
                 transfer->SetupPacket.bRequest = 0xA0;
                 transfer->SetupPacket.wValue = 0xE600;
@@ -857,13 +861,13 @@ namespace CyUSB
         unsafe void GetDevDescriptor()
         {
 
-            int len = 56;									// total size of buffer
-            byte[] buffer = new byte[len];
+            var len = 56;									// total size of buffer
+            var buffer = new byte[len];
             bool bRetVal;
 
             fixed (byte* buf = buffer)
             {
-                SINGLE_TRANSFER* transfer = (SINGLE_TRANSFER*)buf;
+                var transfer = (SINGLE_TRANSFER*)buf;
                 transfer->SetupPacket.bmRequest = CyConst.TGT_DEVICE | CyConst.REQ_STD | CyConst.DIR_FROM_DEVICE;
                 transfer->SetupPacket.bRequest = CyConst.USB_REQUEST_GET_DESCRIPTOR;
                 transfer->SetupPacket.wValue = CyConst.USB_DEVICE_DESCRIPTOR_TYPE << 8;
@@ -888,7 +892,7 @@ namespace CyUSB
 
                 if (bRetVal)
                 {
-                    USB_DEVICE_DESCRIPTOR* descriptor = (USB_DEVICE_DESCRIPTOR*)(buf + 38);
+                    var descriptor = (USB_DEVICE_DESCRIPTOR*)(buf + 38);
 
                     _usbDeviceDescriptor = *descriptor;
 
@@ -911,17 +915,17 @@ namespace CyUSB
         }
         unsafe bool GetBosDescriptor()
         { // false - device doesn't have a BOS , true - device have a BOS
-            uint _MaxDescriptorBufferLength = CyConst.MaxDescriptorBufferLength + 38; // size of SINGLE_TRANSFER = 38
+            var _MaxDescriptorBufferLength = CyConst.MaxDescriptorBufferLength + 38; // size of SINGLE_TRANSFER = 38
 
             //int len = 38 + 9;  // size of SINGLE_TRANSFER + USB_BOS_DESCRIPTOR
-            int len = sizeof(SINGLE_TRANSFER) + CyConst.SIZEOF_USB_BOS_DESCRIPTOR;
+            var len = sizeof(SINGLE_TRANSFER) + CyConst.SIZEOF_USB_BOS_DESCRIPTOR;
 
-            byte[] buffer = new byte[_MaxDescriptorBufferLength]; // big buffer . . . Bos descriptors can be large
+            var buffer = new byte[_MaxDescriptorBufferLength]; // big buffer . . . Bos descriptors can be large
 
             fixed (byte* buf = buffer)
             {
                 // first get the BOS descriptor
-                SINGLE_TRANSFER* transfer = (SINGLE_TRANSFER*)buf;
+                var transfer = (SINGLE_TRANSFER*)buf;
                 transfer->SetupPacket.bmRequest = CyConst.TGT_DEVICE | CyConst.REQ_STD | CyConst.DIR_FROM_DEVICE;
                 transfer->SetupPacket.bRequest = CyConst.USB_REQUEST_GET_DESCRIPTOR;
                 transfer->SetupPacket.wValue = (ushort)(CyConst.USB_BOS_DESCRIPTOR_TYPE << 8);
@@ -930,13 +934,13 @@ namespace CyUSB
                 transfer->BufferOffset = (uint)sizeof(SINGLE_TRANSFER);	// size of the SINGLE_TRANSFER part
                 transfer->BufferLength = CyConst.SIZEOF_USB_BOS_DESCRIPTOR;
 
-                bool bRetVal = IoControl(CyConst.IOCTL_ADAPT_SEND_EP0_CONTROL_TRANSFER, buffer, len);
+                var bRetVal = IoControl(CyConst.IOCTL_ADAPT_SEND_EP0_CONTROL_TRANSFER, buffer, len);
                 _usbdStatus = transfer->UsbdStatus;
                 _ntStatus = transfer->NtStatus;
 
                 if (bRetVal)
                 {
-                    USB_BOS_DESCRIPTOR* descriptor = (USB_BOS_DESCRIPTOR*)(buf + 38);
+                    var descriptor = (USB_BOS_DESCRIPTOR*)(buf + 38);
 
                     // Get the entire descriptor
                     len = 38 + descriptor->wToatalLength;
@@ -957,8 +961,8 @@ namespace CyUSB
 
                     if (bRetVal)
                     {
-                        int lastByte = _bytesXfered[0] - 38;
-                        for (int i = 0; i < lastByte; i++)
+                        var lastByte = _bytesXfered[0] - 38;
+                        for (var i = 0; i < lastByte; i++)
                             _usb30BosDescriptors[i] = buffer[i + 38];
                     }
                 }
@@ -972,14 +976,14 @@ namespace CyUSB
         unsafe void SetStringDescrLanguage()
         {
             // Get the header to find-out the number of languages, size of lang ID list
-            int len = 38 + 2;  // size of SINGLE_TRANSFER) + USB_COMMON_DESCRIPTOR
+            var len = 38 + 2;  // size of SINGLE_TRANSFER) + USB_COMMON_DESCRIPTOR
 
             // DWY was 256
-            byte[] buffer = new byte[512]; // extra big buffer . . . just in case
+            var buffer = new byte[512]; // extra big buffer . . . just in case
 
             fixed (byte* buf = buffer)
             {
-                SINGLE_TRANSFER* transfer = (SINGLE_TRANSFER*)buf;
+                var transfer = (SINGLE_TRANSFER*)buf;
                 transfer->SetupPacket.bmRequest = CyConst.TGT_DEVICE | CyConst.REQ_STD | CyConst.DIR_FROM_DEVICE;
                 transfer->SetupPacket.bRequest = CyConst.USB_REQUEST_GET_DESCRIPTOR;
                 transfer->SetupPacket.wValue = CyConst.USB_STRING_DESCRIPTOR_TYPE << 8;
@@ -988,15 +992,15 @@ namespace CyUSB
                 transfer->BufferOffset = 38;	// size of the SINGLE_TRANSFER part
                 transfer->BufferLength = 2;
 
-                bool bRetVal = IoControl(CyConst.IOCTL_ADAPT_SEND_EP0_CONTROL_TRANSFER, buffer, len);
+                var bRetVal = IoControl(CyConst.IOCTL_ADAPT_SEND_EP0_CONTROL_TRANSFER, buffer, len);
                 _usbdStatus = transfer->UsbdStatus;
                 _ntStatus = transfer->NtStatus;
 
                 if (bRetVal)
                 {
-                    USB_COMMON_DESCRIPTOR* descriptor = (USB_COMMON_DESCRIPTOR*)(buf + 38);
+                    var descriptor = (USB_COMMON_DESCRIPTOR*)(buf + 38);
 
-                    int LangIDs = (descriptor->bLength - 2) / 2;
+                    var LangIDs = (descriptor->bLength - 2) / 2;
 
                     // Get the entire descriptor, all LangIDs
                     len = 38 + descriptor->bLength;
@@ -1015,13 +1019,13 @@ namespace CyUSB
 
                     if (bRetVal)
                     {
-                        USB_STRING_DESCRIPTOR* IDs = (USB_STRING_DESCRIPTOR*)(buf + 38);
+                        var IDs = (USB_STRING_DESCRIPTOR*)(buf + 38);
 
-                        _strLangID = (LangIDs > 0) ? IDs[0].bString : (char)0;
+                        _strLangID = LangIDs > 0 ? IDs[0].bString : (char)0;
 
-                        for (int i = 0; i < LangIDs; i++)
+                        for (var i = 0; i < LangIDs; i++)
                         {
-                            UInt16 id = IDs[i].bString;
+                            var id = IDs[i].bString;
                             if (id == 0x0409) _strLangID = id;
                         }
                     }//if
@@ -1038,14 +1042,14 @@ namespace CyUSB
             if (sIndex == 0) return "";
 
             // Get the header to find-out the number of languages, size of lang ID list
-            int len = 38 + 2;  // size of SINGLE_TRANSFER) + USB_COMMON_DESCRIPTOR
+            var len = 38 + 2;  // size of SINGLE_TRANSFER) + USB_COMMON_DESCRIPTOR
 
             // dwy was 512
-            byte[] buffer = new byte[1024]; // extra big buffer . . . just in case
+            var buffer = new byte[1024]; // extra big buffer . . . just in case
 
             fixed (byte* buf = buffer)
             {
-                SINGLE_TRANSFER* transfer = (SINGLE_TRANSFER*)buf;
+                var transfer = (SINGLE_TRANSFER*)buf;
                 transfer->SetupPacket.bmRequest = CyConst.TGT_DEVICE | CyConst.REQ_STD | CyConst.DIR_FROM_DEVICE;
                 transfer->SetupPacket.bRequest = CyConst.USB_REQUEST_GET_DESCRIPTOR;
                 transfer->SetupPacket.wValue = (ushort)((CyConst.USB_STRING_DESCRIPTOR_TYPE << 8) | sIndex);
@@ -1055,13 +1059,13 @@ namespace CyUSB
                 transfer->BufferOffset = 38;	// size of the SINGLE_TRANSFER part
                 transfer->BufferLength = 2;
 
-                bool bRetVal = IoControl(CyConst.IOCTL_ADAPT_SEND_EP0_CONTROL_TRANSFER, buffer, len);
+                var bRetVal = IoControl(CyConst.IOCTL_ADAPT_SEND_EP0_CONTROL_TRANSFER, buffer, len);
                 _usbdStatus = transfer->UsbdStatus;
                 _ntStatus = transfer->NtStatus;
 
                 if (bRetVal)
                 {
-                    USB_COMMON_DESCRIPTOR* descriptor = (USB_COMMON_DESCRIPTOR*)(buf + 38);
+                    var descriptor = (USB_COMMON_DESCRIPTOR*)(buf + 38);
 
                     // Get the entire descriptor
                     len = 38 + descriptor->bLength;
@@ -1081,7 +1085,7 @@ namespace CyUSB
 
                     if (bRetVal)
                     {
-                        char* sChars = (char*)(buf + 40);
+                        var sChars = (char*)(buf + 40);
                         //s = new string(sChars);
                         return new string(sChars);
                     }
@@ -1146,10 +1150,10 @@ namespace CyUSB
             _name = "";
             if (_hDevice == CyConst.INVALID_HANDLE) return;
 
-            byte[] buffer = new byte[CyConst.USB_STRING_MAXLEN];
-            bool bRetVal = IoControl(CyConst.IOCTL_ADAPT_GET_DEVICE_NAME, buffer, CyConst.USB_STRING_MAXLEN);
+            var buffer = new byte[CyConst.USB_STRING_MAXLEN];
+            var bRetVal = IoControl(CyConst.IOCTL_ADAPT_GET_DEVICE_NAME, buffer, CyConst.USB_STRING_MAXLEN);
 
-            if (bRetVal && (_bytesXfered[0] > 0))
+            if (bRetVal && _bytesXfered[0] > 0)
                 fixed (byte* buf = buffer)
                 {
                     _name = new string((sbyte*)buf);
@@ -1162,10 +1166,10 @@ namespace CyUSB
             _friendlyName = "";
             if (_hDevice == CyConst.INVALID_HANDLE) return;
 
-            byte[] buffer = new byte[CyConst.USB_STRING_MAXLEN];
-            bool bRetVal = IoControl(CyConst.IOCTL_ADAPT_GET_FRIENDLY_NAME, buffer, CyConst.USB_STRING_MAXLEN);
+            var buffer = new byte[CyConst.USB_STRING_MAXLEN];
+            var bRetVal = IoControl(CyConst.IOCTL_ADAPT_GET_FRIENDLY_NAME, buffer, CyConst.USB_STRING_MAXLEN);
 
-            if (bRetVal && (_bytesXfered[0] > 0))
+            if (bRetVal && _bytesXfered[0] > 0)
                 fixed (byte* buf = buffer)
                 {
                     _friendlyName = new string((sbyte*)buf);
@@ -1178,13 +1182,13 @@ namespace CyUSB
             _driverVersion = 0;
             if (_hDevice == CyConst.INVALID_HANDLE) return;
 
-            byte[] buffer = new byte[4];
-            bool bRetVal = IoControl(CyConst.IOCTL_ADAPT_GET_DRIVER_VERSION, buffer, 4);
+            var buffer = new byte[4];
+            var bRetVal = IoControl(CyConst.IOCTL_ADAPT_GET_DRIVER_VERSION, buffer, 4);
 
-            if (bRetVal && (_bytesXfered[0] == 4))
+            if (bRetVal && _bytesXfered[0] == 4)
                 fixed (byte* buf = buffer)
                 {
-                    UInt32* ver = (UInt32*)buf;
+                    var ver = (UInt32*)buf;
                     _driverVersion = *ver;
                 }
         }
@@ -1195,13 +1199,13 @@ namespace CyUSB
             _usbdiVersion = 0;
             if (_hDevice == CyConst.INVALID_HANDLE) return;
 
-            byte[] buffer = new byte[4];
-            bool bRetVal = IoControl(CyConst.IOCTL_ADAPT_GET_USBDI_VERSION, buffer, 4);
+            var buffer = new byte[4];
+            var bRetVal = IoControl(CyConst.IOCTL_ADAPT_GET_USBDI_VERSION, buffer, 4);
 
-            if (bRetVal && (_bytesXfered[0] == 4))
+            if (bRetVal && _bytesXfered[0] == 4)
                 fixed (byte* buf = buffer)
                 {
-                    UInt32* ver = (UInt32*)buf;
+                    var ver = (UInt32*)buf;
                     _usbdiVersion = *ver;
                 }
         }
@@ -1212,10 +1216,10 @@ namespace CyUSB
             _usbAddress = 0;
             if (_hDevice == CyConst.INVALID_HANDLE) return;
 
-            byte[] buf = new byte[1];
-            bool bRetVal = IoControl(CyConst.IOCTL_ADAPT_GET_ADDRESS, buf, 1);
+            var buf = new byte[1];
+            var bRetVal = IoControl(CyConst.IOCTL_ADAPT_GET_ADDRESS, buf, 1);
 
-            if (bRetVal && (_bytesXfered[0] == 1)) _usbAddress = buf[0];
+            if (bRetVal && _bytesXfered[0] == 1) _usbAddress = buf[0];
         }
 
 
@@ -1223,15 +1227,15 @@ namespace CyUSB
         {
             if (_hDevice == CyConst.INVALID_HANDLE) return;
 
-            byte[] buf = new byte[4];
+            var buf = new byte[4];
             _bHighSpeed = false;
             _bSuperSpeed = false;
-            bool bRetVal = IoControl(CyConst.IOCTL_ADAPT_GET_DEVICE_SPEED, buf, 4);
+            var bRetVal = IoControl(CyConst.IOCTL_ADAPT_GET_DEVICE_SPEED, buf, 4);
 
-            if (bRetVal && (_bytesXfered[0] == 4))
+            if (bRetVal && _bytesXfered[0] == 4)
             {
-                _bHighSpeed = (buf[0] == 2);
-                _bSuperSpeed = (buf[0] == 4);
+                _bHighSpeed  = buf[0] == 2;
+                _bSuperSpeed = buf[0] == 4;
             }
         }
 
@@ -1242,7 +1246,7 @@ namespace CyUSB
             // Find match of IntfcNum and alt in table of interfaces
             if (USBCfgs[_cfgNum] != null)
             {
-                for (int j = 0; j < USBCfgs[_cfgNum].AltInterfaces; j++)
+                for (var j = 0; j < USBCfgs[_cfgNum].AltInterfaces; j++)
                     if (USBCfgs[_cfgNum].Interfaces[j].bAlternateSetting == alt)
                     {
                         _intfcIndex = (byte)j;
@@ -1259,17 +1263,17 @@ namespace CyUSB
 
         unsafe void GetCfgDescriptor(int descIndex)
         {
-            uint _MaxDescriptorBufferLength = CyConst.MaxDescriptorBufferLength + 38; // size of SINGLE_TRANSFER = 38
+            var _MaxDescriptorBufferLength = CyConst.MaxDescriptorBufferLength + 38; // size of SINGLE_TRANSFER = 38
 
             if (descIndex > _configs) return;
 
-            int len = 38 + 9;  // size of SINGLE_TRANSFER + USB_CONFIGURATION_DESCRIPTOR
+            var len = 38 + 9;  // size of SINGLE_TRANSFER + USB_CONFIGURATION_DESCRIPTOR
 
-            byte[] buffer = new byte[_MaxDescriptorBufferLength]; // big buffer . . . config descriptors can be large
+            var buffer = new byte[_MaxDescriptorBufferLength]; // big buffer . . . config descriptors can be large
 
             fixed (byte* buf = buffer)
             {
-                SINGLE_TRANSFER* transfer = (SINGLE_TRANSFER*)buf;
+                var transfer = (SINGLE_TRANSFER*)buf;
                 transfer->SetupPacket.bmRequest = CyConst.TGT_DEVICE | CyConst.REQ_STD | CyConst.DIR_FROM_DEVICE;
                 transfer->SetupPacket.bRequest = CyConst.USB_REQUEST_GET_DESCRIPTOR;
                 transfer->SetupPacket.wValue = (ushort)((CyConst.USB_CONFIGURATION_DESCRIPTOR_TYPE << 8) | descIndex);
@@ -1278,13 +1282,13 @@ namespace CyUSB
                 transfer->BufferOffset = 38;	// size of the SINGLE_TRANSFER part
                 transfer->BufferLength = 9;
 
-                bool bRetVal = IoControl(CyConst.IOCTL_ADAPT_SEND_EP0_CONTROL_TRANSFER, buffer, len);
+                var bRetVal = IoControl(CyConst.IOCTL_ADAPT_SEND_EP0_CONTROL_TRANSFER, buffer, len);
                 _usbdStatus = transfer->UsbdStatus;
                 _ntStatus = transfer->NtStatus;
 
                 if (bRetVal)
                 {
-                    USB_CONFIGURATION_DESCRIPTOR* descriptor = (USB_CONFIGURATION_DESCRIPTOR*)(buf + 38);
+                    var descriptor = (USB_CONFIGURATION_DESCRIPTOR*)(buf + 38);
 
                     // Get the entire descriptor
                     len = 38 + descriptor->wTotalLength;
@@ -1305,8 +1309,8 @@ namespace CyUSB
 
                     if (bRetVal)
                     {
-                        int lastByte = _bytesXfered[0] - 38;
-                        for (int i = 0; i < lastByte; i++)
+                        var lastByte = _bytesXfered[0] - 38;
+                        for (var i = 0; i < lastByte; i++)
                             _usbConfigDescriptors[descIndex][i] = buffer[i + 38];
                     }
                 }
@@ -1329,20 +1333,20 @@ namespace CyUSB
             InterruptInEndPt = null;
             InterruptOutEndPt = null;
 
-            for (int i = 1; i < eptCount; i++)
+            for (var i = 1; i < eptCount; i++)
             {
-                bool bIn = (EndPoints[i].Address & 0x80) > 0;
-                byte attrib = EndPoints[i].Attributes;
+                var bIn = (EndPoints[i].Address & 0x80) > 0;
+                var attrib = EndPoints[i].Attributes;
 
                 if (EndPoints[i] != null) EndPoints[i].XferMode = XMODE.DIRECT;
 
-                if ((IsocInEndPt == null) && (attrib == 1) && bIn) IsocInEndPt = EndPoints[i] as CyIsocEndPoint;
-                if ((BulkInEndPt == null) && (attrib == 2) && bIn) BulkInEndPt = EndPoints[i] as CyBulkEndPoint;
-                if ((InterruptInEndPt == null) && (attrib == 3) && bIn) InterruptInEndPt = EndPoints[i] as CyInterruptEndPoint;
+                if (IsocInEndPt == null && attrib == 1 && bIn) IsocInEndPt = EndPoints[i] as CyIsocEndPoint;
+                if (BulkInEndPt == null && attrib == 2 && bIn) BulkInEndPt = EndPoints[i] as CyBulkEndPoint;
+                if (InterruptInEndPt == null && attrib == 3 && bIn) InterruptInEndPt = EndPoints[i] as CyInterruptEndPoint;
 
-                if ((IsocOutEndPt == null) && (attrib == 1) && !bIn) IsocOutEndPt = EndPoints[i] as CyIsocEndPoint;
-                if ((BulkOutEndPt == null) && (attrib == 2) && !bIn) BulkOutEndPt = EndPoints[i] as CyBulkEndPoint;
-                if ((InterruptOutEndPt == null) && (attrib == 3) && !bIn) InterruptOutEndPt = EndPoints[i] as CyInterruptEndPoint;
+                if (IsocOutEndPt == null && attrib == 1 && !bIn) IsocOutEndPt = EndPoints[i] as CyIsocEndPoint;
+                if (BulkOutEndPt == null && attrib == 2 && !bIn) BulkOutEndPt = EndPoints[i] as CyBulkEndPoint;
+                if (InterruptOutEndPt == null && attrib == 3 && !bIn) InterruptOutEndPt = EndPoints[i] as CyInterruptEndPoint;
             }
 
         }

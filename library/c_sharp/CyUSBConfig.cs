@@ -36,65 +36,38 @@ namespace CyUSB
 
         CyUSBInterfaceContainer[] IntfcContainer;
 
-        byte _bLength;
-        public byte bLength
-        {
-            get { return _bLength; }
-        }
+        byte        _bLength;
+        public byte bLength => _bLength;
 
-        byte _bDescriptorType;
-        public byte bDescriptorType
-        {
-            get { return _bDescriptorType; }
-        }
+        byte        _bDescriptorType;
+        public byte bDescriptorType => _bDescriptorType;
 
-        ushort _wTotalLength;
-        public ushort wTotalLength
-        {
-            get { return _wTotalLength; }
-        }
+        ushort        _wTotalLength;
+        public ushort wTotalLength => _wTotalLength;
 
-        byte _bNumInterfaces;
-        public byte bNumInterfaces
-        {
-            get { return _bNumInterfaces; }
-        }
+        byte        _bNumInterfaces;
+        public byte bNumInterfaces => _bNumInterfaces;
 
-        byte _bConfigurationValue;
-        public byte bConfigurationValue
-        {
-            get { return _bConfigurationValue; }
-        }
+        byte        _bConfigurationValue;
+        public byte bConfigurationValue => _bConfigurationValue;
 
-        byte _iConfiguration;
-        public byte iConfiguration
-        {
-            get { return _iConfiguration; }
-        }
+        byte        _iConfiguration;
+        public byte iConfiguration => _iConfiguration;
 
-        byte _bmAttributes;
-        public byte bmAttributes
-        {
-            get { return _bmAttributes; }
-        }
+        byte        _bmAttributes;
+        public byte bmAttributes => _bmAttributes;
 
-        byte _MaxPower;
-        public byte MaxPower
-        {
-            get { return _MaxPower; }
-        }
+        byte        _MaxPower;
+        public byte MaxPower => _MaxPower;
 
-        byte _AltInterfaces;
-        public byte AltInterfaces
-        {
-            get { return _AltInterfaces; }
-        }
+        byte        _AltInterfaces;
+        public byte AltInterfaces => _AltInterfaces;
 
-        unsafe internal CyUSBConfig(IntPtr handle, byte[] DescrData, CyControlEndPoint ctlEndPt)
+        internal unsafe CyUSBConfig(IntPtr handle, byte[] DescrData, CyControlEndPoint ctlEndPt)
         {// This contructore is to initialize usb2.0 device
             fixed (byte* buf = DescrData)
             {
-                USB_CONFIGURATION_DESCRIPTOR* ConfigDescr = (USB_CONFIGURATION_DESCRIPTOR*)buf;
+                var ConfigDescr = (USB_CONFIGURATION_DESCRIPTOR*)buf;
 
                 _bLength = ConfigDescr->bLength;
                 _bDescriptorType = ConfigDescr->bDescriptorType;
@@ -108,15 +81,15 @@ namespace CyUSB
 
                 int tLen = ConfigDescr->wTotalLength;
 
-                byte* desc = (byte*)(buf + ConfigDescr->bLength);
+                var desc = (byte*)(buf + ConfigDescr->bLength);
                 int bytesConsumed = ConfigDescr->bLength;
 
                 Interfaces = new CyUSBInterface[CyConst.MAX_INTERFACES];
 
-                int i = 0;
+                var i = 0;
                 do
                 {
-                    USB_INTERFACE_DESCRIPTOR* interfaceDesc = (USB_INTERFACE_DESCRIPTOR*)desc;
+                    var interfaceDesc = (USB_INTERFACE_DESCRIPTOR*)desc;
 
                     if (interfaceDesc->bDescriptorType == CyConst.USB_INTERFACE_DESCRIPTOR_TYPE)
                     {
@@ -136,13 +109,13 @@ namespace CyUSB
 
                     desc = (byte*)(buf + bytesConsumed);
 
-                } while ((bytesConsumed < tLen) && (i < CyConst.MAX_INTERFACES));
+                } while (bytesConsumed < tLen && i < CyConst.MAX_INTERFACES);
                 // Count the alt interfaces for each interface number
                 for (i = 0; i < _AltInterfaces; i++)
                 {
                     Interfaces[i]._bAltSettings = 0;
 
-                    for (int j = 0; j < AltInterfaces; j++) // Walk the list looking for identical bInterfaceNumbers
+                    for (var j = 0; j < AltInterfaces; j++) // Walk the list looking for identical bInterfaceNumbers
                         if (Interfaces[i].bInterfaceNumber == Interfaces[j].bInterfaceNumber)
                             Interfaces[i]._bAltSettings++;
 
@@ -151,17 +124,17 @@ namespace CyUSB
                 // Create the Interface Container (this is done only for Tree view purpose).
                 IntfcContainer = new CyUSBInterfaceContainer[bNumInterfaces];
 
-                Dictionary<int, bool> altDict = new Dictionary<int, bool>();
-                int intfcCount = 0;
+                var altDict = new Dictionary<int, bool>();
+                var intfcCount = 0;
 
                 for (i = 0; i < _AltInterfaces; i++)
                 {
                     if (altDict.ContainsKey(Interfaces[i].bInterfaceNumber) == false)
                     {
-                        int altIntfcCount = 0;
+                        var altIntfcCount = 0;
                         IntfcContainer[intfcCount] = new CyUSBInterfaceContainer(Interfaces[i].bInterfaceNumber, Interfaces[i].bAltSettings);
 
-                        for (int j = i; j < AltInterfaces; j++)
+                        for (var j = i; j < AltInterfaces; j++)
                         {
                             if (Interfaces[i].bInterfaceNumber == Interfaces[j].bInterfaceNumber)
                             {
@@ -177,11 +150,11 @@ namespace CyUSB
             } /* end of fixed loop */
 
         }
-        unsafe internal CyUSBConfig(IntPtr handle, byte[] DescrData, CyControlEndPoint ctlEndPt, byte usb30Dummy)
+        internal unsafe CyUSBConfig(IntPtr handle, byte[] DescrData, CyControlEndPoint ctlEndPt, byte usb30Dummy)
         {// This constructure will be called for USB3.0 device initialization
             fixed (byte* buf = DescrData)
             {
-                USB_CONFIGURATION_DESCRIPTOR* ConfigDescr = (USB_CONFIGURATION_DESCRIPTOR*)buf;
+                var ConfigDescr = (USB_CONFIGURATION_DESCRIPTOR*)buf;
 
                 _bLength = ConfigDescr->bLength;
                 _bDescriptorType = ConfigDescr->bDescriptorType;
@@ -195,15 +168,15 @@ namespace CyUSB
 
                 int tLen = ConfigDescr->wTotalLength;
 
-                byte* desc = (byte*)(buf + ConfigDescr->bLength);
+                var desc = (byte*)(buf + ConfigDescr->bLength);
                 int bytesConsumed = ConfigDescr->bLength;
 
                 Interfaces = new CyUSBInterface[CyConst.MAX_INTERFACES];
 
-                int i = 0;
+                var i = 0;
                 do
                 {
-                    USB_INTERFACE_DESCRIPTOR* interfaceDesc = (USB_INTERFACE_DESCRIPTOR*)desc;
+                    var interfaceDesc = (USB_INTERFACE_DESCRIPTOR*)desc;
 
                     if (interfaceDesc->bDescriptorType == CyConst.USB_INTERFACE_DESCRIPTOR_TYPE)
                     {
@@ -223,13 +196,13 @@ namespace CyUSB
 
                     desc = (byte*)(buf + bytesConsumed);
 
-                } while ((bytesConsumed < tLen) && (i < CyConst.MAX_INTERFACES));
+                } while (bytesConsumed < tLen && i < CyConst.MAX_INTERFACES);
                 // Count the alt interfaces for each interface number
                 for (i = 0; i < _AltInterfaces; i++)
                 {
                     Interfaces[i]._bAltSettings = 0;
 
-                    for (int j = 0; j < AltInterfaces; j++) // Walk the list looking for identical bInterfaceNumbers
+                    for (var j = 0; j < AltInterfaces; j++) // Walk the list looking for identical bInterfaceNumbers
                         if (Interfaces[i].bInterfaceNumber == Interfaces[j].bInterfaceNumber)
                             Interfaces[i]._bAltSettings++;
 
@@ -238,17 +211,17 @@ namespace CyUSB
                 // Create the Interface Container (this is done only for Tree view purpose).
                 IntfcContainer = new CyUSBInterfaceContainer[bNumInterfaces];
 
-                Dictionary<int, bool> altDict = new Dictionary<int, bool>();
-                int intfcCount = 0;
+                var altDict = new Dictionary<int, bool>();
+                var intfcCount = 0;
 
                 for (i = 0; i < _AltInterfaces; i++)
                 {
                     if (altDict.ContainsKey(Interfaces[i].bInterfaceNumber) == false)
                     {
-                        int altIntfcCount = 0;
+                        var altIntfcCount = 0;
                         IntfcContainer[intfcCount] = new CyUSBInterfaceContainer(Interfaces[i].bInterfaceNumber, Interfaces[i].bAltSettings);
 
-                        for (int j = i; j < AltInterfaces; j++)
+                        for (var j = i; j < AltInterfaces; j++)
                         {
                             if (Interfaces[i].bInterfaceNumber == Interfaces[j].bInterfaceNumber)
                             {
@@ -269,25 +242,29 @@ namespace CyUSB
         {
             get
             {
-                string tmp = "Configuration " + bConfigurationValue.ToString();
+                var tmp = "Configuration " + bConfigurationValue.ToString();
                 //string tmp = "Primary Configuration";
                 //if (iConfiguration == 1)
                 //    tmp = "Secondary Configuration";
 
                 //TreeNode[] iTree = new TreeNode[_AltInterfaces + 1];
-                TreeNode[] iTree = new TreeNode[bNumInterfaces + 1];
+                var iTree = new TreeNode[bNumInterfaces + 1];
 
-                iTree[0] = new TreeNode("Control endpoint (0x00)");
-                iTree[0].Tag = Interfaces[0].EndPoints[0];
+                iTree[0]     = new TreeNode("Control endpoint (0x00)")
+                {
+                    Tag = Interfaces[0].EndPoints[0]
+                };
 
-                for (int i = 0; i < bNumInterfaces; i++)
+                for (var i = 0; i < bNumInterfaces; i++)
                     iTree[i + 1] = IntfcContainer[i].Tree;
 
                 //for (int i = 0; i < _AltInterfaces; i++)
                 //    iTree[i + 1] = Interfaces[i].Tree;
 
-                TreeNode t = new TreeNode(tmp, iTree);
-                t.Tag = this;
+                var t = new TreeNode(tmp, iTree)
+                {
+                    Tag = this
+                };
 
                 return t;
             }
@@ -296,18 +273,18 @@ namespace CyUSB
 
         public override string ToString()
         {
-            StringBuilder s = new StringBuilder("\t<CONFIGURATION>\r\n");
+            var s = new StringBuilder("\t<CONFIGURATION>\r\n");
 
-            s.Append(string.Format("\t\tConfiguration=\"{0}\"\r\n", _iConfiguration));
-            s.Append(string.Format("\t\tConfigurationValue=\"{0}\"\r\n", _bConfigurationValue));
-            s.Append(string.Format("\t\tAttributes=\"{0:X2}h\"\r\n", _bmAttributes));
-            s.Append(string.Format("\t\tInterfaces=\"{0}\"\r\n", _bNumInterfaces));
-            s.Append(string.Format("\t\tDescriptorType=\"{0}\"\r\n", _bDescriptorType));
-            s.Append(string.Format("\t\tDescriptorLength=\"{0}\"\r\n", _bLength));
-            s.Append(string.Format("\t\tTotalLength=\"{0}\"\r\n", _wTotalLength));
-            s.Append(string.Format("\t\tMaxPower=\"{0}\"\r\n", _MaxPower));
+            s.Append($"\t\tConfiguration=\"{_iConfiguration}\"\r\n");
+            s.Append($"\t\tConfigurationValue=\"{_bConfigurationValue}\"\r\n");
+            s.Append($"\t\tAttributes=\"{_bmAttributes:X2}h\"\r\n");
+            s.Append($"\t\tInterfaces=\"{_bNumInterfaces}\"\r\n");
+            s.Append($"\t\tDescriptorType=\"{_bDescriptorType}\"\r\n");
+            s.Append($"\t\tDescriptorLength=\"{_bLength}\"\r\n");
+            s.Append($"\t\tTotalLength=\"{_wTotalLength}\"\r\n");
+            s.Append($"\t\tMaxPower=\"{_MaxPower}\"\r\n");
 
-            for (int i = 0; i < _AltInterfaces; i++)
+            for (var i = 0; i < _AltInterfaces; i++)
                 s.Append(Interfaces[i].ToString());
 
             s.Append("\t</CONFIGURATION>\r\n");

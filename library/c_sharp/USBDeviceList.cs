@@ -90,7 +90,7 @@ namespace CyUSB
             FillDriverGuids(DeviceMask);
 
             USBDevice tmpDev, tmp;
-            int devs = 0;
+            var devs = 0;
 
             foreach (Guid guid in USBDriverGuids)
             {
@@ -105,7 +105,7 @@ namespace CyUSB
                 // DeviceCount is IO intensive. Don't use it as for loop limit                
                 devs = tmpDev.DeviceCount;
 
-                for (int d = 0; d < devs; d++)
+                for (var d = 0; d < devs; d++)
                 {
                     // Create the new USBDevice objects of the correct type, based on guid
                     if (guid.Equals(CyConst.StorGuid))
@@ -117,7 +117,7 @@ namespace CyUSB
                         tmp = new CyFX2Device(guid);
                         if (tmp.Open((byte)d))
                         {// open handle to check device type
-                            CyUSBDevice t = tmp as CyUSBDevice;
+                            var t = tmp as CyUSBDevice;
                             if (!t.CheckDeviceTypeFX3FX2())
                             {//FX3
                                 tmp.Close();
@@ -155,7 +155,7 @@ namespace CyUSB
                 AppCallBack(pnpEvent, hRemovedDevice);
             else
             {
-                USBEventArgs e = new USBEventArgs();
+                var e = new USBEventArgs();
 
                 if (pnpEvent.Equals(CyConst.DBT_DEVICEREMOVECOMPLETE))
                 {
@@ -169,7 +169,7 @@ namespace CyUSB
 
                 if (pnpEvent.Equals(CyConst.DBT_DEVICEARRIVAL))
                 {
-                    USBDevice newDev = Add();  // Find and add the new device to the list
+                    var newDev = Add();  // Find and add the new device to the list
 
                     if (DeviceAttached != null)
                     {
@@ -197,7 +197,7 @@ namespace CyUSB
             // found in the registry.  This routine handles such situations, returning Guid.Empty.
             try
             {
-                Guid g = new Guid(sguid);
+                var g = new Guid(sguid);
                 return g;
             }
             catch
@@ -212,13 +212,13 @@ namespace CyUSB
             // Device Parameters key.  Assume any such device is a derivative of CyUSB3.sys
             if ((DevMask & CyConst.DEVICES_CYUSB) == CyConst.DEVICES_CYUSB)
             {
-                RegistryKey rkDevs = Registry.LocalMachine.OpenSubKey("SYSTEM\\CurrentControlSet\\Enum\\USB");
+                var rkDevs = Registry.LocalMachine.OpenSubKey("SYSTEM\\CurrentControlSet\\Enum\\USB");
 
                 if (rkDevs == null) return;
 
-                string[] sDevs = rkDevs.GetSubKeyNames();
+                var sDevs = rkDevs.GetSubKeyNames();
 
-                foreach (string sUsbDev in sDevs)
+                foreach (var sUsbDev in sDevs)
                 {
                     RegistryKey rkSNums = null;
                     try
@@ -231,9 +231,9 @@ namespace CyUSB
 
                     if (rkSNums != null)
                     {
-                        string[] sSNums = rkSNums.GetSubKeyNames();
+                        var sSNums = rkSNums.GetSubKeyNames();
 
-                        foreach (string serNum in sSNums)
+                        foreach (var serNum in sSNums)
                         {
                             RegistryKey rkSNum = null;
                             try
@@ -246,36 +246,36 @@ namespace CyUSB
 
                             if (rkSNum != null)
                             {
-                                string sDriver = rkSNum.GetValue("Driver") as string;
+                                var sDriver = rkSNum.GetValue("Driver") as string;
                                 if (sDriver != null)
                                 {
-                                    int slashPos = sDriver.LastIndexOf("\\");
+                                    var slashPos = sDriver.LastIndexOf("\\");
                                     if (slashPos > 0)
                                     {
-                                        string dx = string.Format("{0:4}", sDriver.Substring(slashPos + 1, 4));
-                                        RegistryKey rkDriver = Registry.LocalMachine.OpenSubKey("SYSTEM\\CurrentControlSet\\Control\\Class\\{36FC9E60-C465-11CF-8056-444553540000}\\" + dx);
+                                        var dx = $"{sDriver.Substring(slashPos + 1, 4):4}";
+                                        var rkDriver = Registry.LocalMachine.OpenSubKey("SYSTEM\\CurrentControlSet\\Control\\Class\\{36FC9E60-C465-11CF-8056-444553540000}\\" + dx);
                                         if (rkDriver != null)
                                         {
-                                            string sDriverName = rkDriver.GetValue("DriverBase") as string;
+                                            var sDriverName = rkDriver.GetValue("DriverBase") as string;
                                             if (sDriverName == null)
                                                 sDriverName = rkDriver.GetValue("NTMPDriver") as string;
 
 
                                             if (sDriverName != null)
                                             {
-                                                RegistryKey rkDevParams = rkSNum.OpenSubKey("Device Parameters");
+                                                var rkDevParams = rkSNum.OpenSubKey("Device Parameters");
                                                 if (rkDevParams != null)
                                                 {
-                                                    string sGuid = rkDevParams.GetValue("DriverGUID") as string;
+                                                    var sGuid = rkDevParams.GetValue("DriverGUID") as string;
 
-                                                    Guid newGuid = GuidFromString(sGuid);
+                                                    var newGuid = GuidFromString(sGuid);
 
                                                     if (!newGuid.Equals(Guid.Empty))
                                                     {
-                                                        bool bNew = true;
+                                                        var bNew = true;
 
                                                         foreach (Guid storedGuid in USBDriverGuids)
-                                                            bNew &= (!newGuid.Equals(storedGuid));
+                                                            bNew &= !newGuid.Equals(storedGuid);
 
                                                         if (bNew)
                                                             USBDriverGuids.Add(newGuid);
@@ -292,30 +292,30 @@ namespace CyUSB
 
                                         if (!CyConst.Customer_ClassGuid.Equals(0))
                                         {
-                                            RegistryKey rkDriver1 = Registry.LocalMachine.OpenSubKey("SYSTEM\\CurrentControlSet\\Control\\Class\\{" + CyConst.Customer_ClassGuid + "}\\" + dx);
+                                            var rkDriver1 = Registry.LocalMachine.OpenSubKey("SYSTEM\\CurrentControlSet\\Control\\Class\\{" + CyConst.Customer_ClassGuid + "}\\" + dx);
 
                                             if (rkDriver1 != null)
                                             {
-                                                string sDriverName1 = rkDriver1.GetValue("DriverBase") as string;
+                                                var sDriverName1 = rkDriver1.GetValue("DriverBase") as string;
                                                 if (sDriverName1 == null)
                                                     sDriverName1 = rkDriver1.GetValue("NTMPDriver") as string;
 
 
                                                 if (sDriverName1 != null)
                                                 {
-                                                    RegistryKey rkDevParams = rkSNum.OpenSubKey("Device Parameters");
+                                                    var rkDevParams = rkSNum.OpenSubKey("Device Parameters");
                                                     if (rkDevParams != null)
                                                     {
-                                                        string sGuid = rkDevParams.GetValue("DriverGUID") as string;
+                                                        var sGuid = rkDevParams.GetValue("DriverGUID") as string;
 
-                                                        Guid newGuid = GuidFromString(sGuid);
+                                                        var newGuid = GuidFromString(sGuid);
 
                                                         if (!newGuid.Equals(Guid.Empty))
                                                         {
-                                                            bool bNew = true;
+                                                            var bNew = true;
 
                                                             foreach (Guid storedGuid in USBDriverGuids)
-                                                                bNew &= (!newGuid.Equals(storedGuid));
+                                                                bNew &= !newGuid.Equals(storedGuid);
 
                                                             if (bNew)
                                                                 USBDriverGuids.Add(newGuid);
@@ -356,9 +356,9 @@ namespace CyUSB
 
             if ((DevMask & CyConst.DEVICES_CYUSB) == CyConst.DEVICES_CYUSB)
             {            //Anyway add cyguid
-                bool bcheck = true;
+                var bcheck = true;
                 foreach (Guid storedGuid in USBDriverGuids)
-                    bcheck &= (!CyConst.CyGuid.Equals(storedGuid));
+                    bcheck &= !CyConst.CyGuid.Equals(storedGuid);
 
                 if (bcheck)
                     USBDriverGuids.Add(CyConst.CyGuid);
@@ -408,13 +408,13 @@ namespace CyUSB
 
         bool RegisterForPnpEvents(IntPtr h, Guid DrvGuid)
         {
-            DEV_BROADCAST_DEVICEINTERFACE dFilter = new DEV_BROADCAST_DEVICEINTERFACE();
+            var dFilter = new DEV_BROADCAST_DEVICEINTERFACE();
             dFilter.dbcc_size = Marshal.SizeOf(dFilter);
             dFilter.dbcc_devicetype = CyConst.DBT_DEVTYP_DEVICEINTERFACE;
             dFilter.dbcc_classguid = DrvGuid;
 
 
-            IntPtr hNotify = PInvoke.RegisterDeviceNotification(h, dFilter, CyConst.DEVICE_NOTIFY_WINDOW_HANDLE);
+            var hNotify = PInvoke.RegisterDeviceNotification(h, dFilter, CyConst.DEVICE_NOTIFY_WINDOW_HANDLE);
             if (hNotify == IntPtr.Zero) return false;
 
             hDevNotifications.Add(hNotify);
@@ -429,7 +429,7 @@ namespace CyUSB
             // Can't use foreach here, as we're modifying Items within the loop
             for (byte i = 0; i < Count; i++)
             {
-                USBDevice tmp = (USBDevice)Items[i];
+                var tmp = (USBDevice)Items[i];
                 if (hDev.Equals(tmp._hDevice))
                 {
                     Items.Remove(tmp);
@@ -445,7 +445,7 @@ namespace CyUSB
             // Can't use foreach here, as we're modifying Items within the loop
             for (byte i = 0; i < Count; i++)
             {
-                USBDevice tmp = (USBDevice)Items[i];
+                var tmp = (USBDevice)Items[i];
                 if (hDev.Equals(tmp._hDevice))
                 {
                     e.Device = null;
@@ -503,7 +503,7 @@ namespace CyUSB
 
 
                 // Find out how many items have this guid
-                int listedDevs = 0;
+                var listedDevs = 0;
                 foreach (USBDevice dev in Items)
                     if (guid.Equals(CyConst.StorGuid) && (dev._drvGuid.Equals(CyConst.CdGuid) || dev._drvGuid.Equals(CyConst.DiskGuid)))
                         listedDevs++;
@@ -525,7 +525,7 @@ namespace CyUSB
                             tmp = new CyFX2Device(guid);
                             if (tmp.Open((byte)d))
                             {// open handle to check device type
-                                CyUSBDevice t = tmp as CyUSBDevice;
+                                var t = tmp as CyUSBDevice;
                                 if (!t.CheckDeviceTypeFX3FX2())
                                 {//FX3
                                     tmp.Close();
@@ -538,7 +538,7 @@ namespace CyUSB
                         }
                         
                         // If this device not already in the list
-                        if (tmp.Open(d) && (DeviceIndex(tmp) == 0xFF))
+                        if (tmp.Open(d) && DeviceIndex(tmp) == 0xFF)
                         {
                             Items.Add(tmp);
                             tmp.RegisterForPnPEvents(MsgWin.Handle);
@@ -593,7 +593,7 @@ namespace CyUSB
                 if (_alreadyDisposed) throw new ObjectDisposedException("");
 
                 foreach (USBDevice tmp in Items)
-                    if ((VID == tmp.VendorID) && (PID == tmp.ProductID)) return tmp;
+                    if (VID == tmp.VendorID && PID == tmp.ProductID) return tmp;
 
                 return null;
             }
@@ -618,9 +618,9 @@ namespace CyUSB
 
                 foreach (USBDevice dev in Items)
                 {
-                    CyHidDevice tmp = dev as CyHidDevice;
-                    if ((tmp != null) && (VID == tmp.VendorID) && (PID == tmp.ProductID) &&
-                        (UsagePg == tmp.UsagePage) && (Usage == tmp.Usage)) return tmp;
+                    var tmp = dev as CyHidDevice;
+                    if (tmp     != null          && VID   == tmp.VendorID  && PID   == tmp.ProductID &&
+                        UsagePg == tmp.UsagePage && Usage == tmp.Usage) return tmp;
                 }
 
                 return null;
@@ -635,8 +635,8 @@ namespace CyUSB
 
                 foreach (USBDevice dev in Items)
                 {
-                    CyHidDevice tmp = dev as CyHidDevice;
-                    if ((tmp != null) && sMfg.Equals(tmp.Manufacturer) && sProd.Equals(tmp.Product)) return tmp;
+                    var tmp = dev as CyHidDevice;
+                    if (tmp != null && sMfg.Equals(tmp.Manufacturer) && sProd.Equals(tmp.Product)) return tmp;
                 }
 
                 return null;
@@ -651,9 +651,9 @@ namespace CyUSB
 
                 foreach (USBDevice dev in Items)
                 {
-                    CyHidDevice tmp = dev as CyHidDevice;
-                    if ((tmp != null) && sMfg.Equals(tmp.Manufacturer) && sProd.Equals(tmp.Product) &&
-                        (UsagePg == tmp.UsagePage) && (Usage == tmp.Usage)) return tmp;
+                    var tmp = dev as CyHidDevice;
+                    if (tmp     != null          && sMfg.Equals(tmp.Manufacturer) && sProd.Equals(tmp.Product) &&
+                        UsagePg == tmp.UsagePage && Usage == tmp.Usage) return tmp;
                 }
 
                 return null;

@@ -175,41 +175,41 @@ namespace CyUSB
    [In] uint slen);
 
         [DllImport("hid.dll", SetLastError = true)]
-        internal unsafe static extern bool HidD_GetPreparsedData(
+        internal static extern unsafe bool HidD_GetPreparsedData(
    [In] IntPtr h,
    [In, Out] ref byte* data);
 
         [DllImport("hid.dll", SetLastError = true)]
-        internal unsafe static extern bool HidD_GetAttributes(
+        internal static extern unsafe bool HidD_GetAttributes(
    [In] IntPtr h,
    [In, Out] ref HIDD_ATTRIBUTES attr);
 
         [DllImport("hid.dll", SetLastError = true)]
-        internal unsafe static extern bool HidD_GetFeature(
+        internal static extern unsafe bool HidD_GetFeature(
    [In] IntPtr h,
    [In, Out] byte[] lpFeatureData,
    [In] int bufLen);
 
         [DllImport("hid.dll", SetLastError = true)]
-        internal unsafe static extern bool HidD_GetInputReport(
+        internal static extern unsafe bool HidD_GetInputReport(
    [In] IntPtr h,
    [In] byte[] lpReportData,
    [In] int bufLen);
 
         [DllImport("hid.dll", SetLastError = true)]
-        internal unsafe static extern bool HidD_SetFeature(
+        internal static extern unsafe bool HidD_SetFeature(
    [In] IntPtr h,
    [In] byte[] lpFeatureData,
    [In] int bufLen);
 
         [DllImport("hid.dll", SetLastError = true)]
-        internal unsafe static extern bool HidD_SetOutputReport(
+        internal static extern unsafe bool HidD_SetOutputReport(
    [In] IntPtr h,
    [In] byte[] lpFeatureData,
    [In] int bufLen);
 
         [DllImport("hid.dll", SetLastError = true)]
-        internal unsafe static extern uint HidP_SetUsageValue(
+        internal static extern unsafe uint HidP_SetUsageValue(
     [In] HIDP_REPORT_TYPE RptType,
    [In] ushort usagePage,
    [In] ushort linkCollection,
@@ -220,7 +220,7 @@ namespace CyUSB
    [In] uint bufLen);
 
         [DllImport("hid.dll", SetLastError = true)]
-        internal unsafe static extern uint HidP_SetUsages(
+        internal static extern unsafe uint HidP_SetUsages(
    [In] HIDP_REPORT_TYPE RptType,
    [In] ushort usagePage,
    [In] ushort linkCollection,
@@ -231,7 +231,7 @@ namespace CyUSB
    [In] uint bufLen);
 
         [DllImport("hid.dll", SetLastError = true)]
-        internal unsafe static extern uint HidP_UnsetUsages(
+        internal static extern unsafe uint HidP_UnsetUsages(
    [In] HIDP_REPORT_TYPE RptType,
    [In] ushort usagePage,
    [In] ushort linkCollection,
@@ -242,33 +242,33 @@ namespace CyUSB
    [In] uint bufLen);
 
         [DllImport("hid.dll", SetLastError = true)]
-        internal unsafe static extern bool HidP_GetCaps(
+        internal static extern unsafe bool HidP_GetCaps(
    [In] byte* preparsedData,
    [In, Out] ref HIDP_CAPS caps);
 
         [DllImport("hid.dll", SetLastError = true)]
-        internal unsafe static extern bool HidP_GetButtonCaps(
+        internal static extern unsafe bool HidP_GetButtonCaps(
    [In] HIDP_REPORT_TYPE RptType,
    [Out] byte* ButtonCaps,
    [In] ref int numCaps,
    [In] byte* preparsedData);
 
         [DllImport("hid.dll", SetLastError = true)]
-        internal unsafe static extern bool HidP_GetValueCaps(
+        internal static extern unsafe bool HidP_GetValueCaps(
    [In] HIDP_REPORT_TYPE RptType,
    [Out] byte* ValueCaps,
    [In] ref int numCaps,
    [In] byte* preparsedData);
 
         [DllImport("hid.dll", SetLastError = true)]
-        internal unsafe static extern uint HidP_MaxUsageListLength(
+        internal static extern unsafe uint HidP_MaxUsageListLength(
    [In] HIDP_REPORT_TYPE RptType,
    [In] ushort numCaps,
    [In] byte* preparsedData);
 
 
         [DllImport("hid.dll", SetLastError = true)]
-        internal unsafe static extern bool HidD_FreePreparsedData(byte* data);
+        internal static extern unsafe bool HidD_FreePreparsedData(byte* data);
 
         #endregion
 
@@ -276,19 +276,19 @@ namespace CyUSB
 
         private static bool IsHandleValid(IntPtr handle)
         {
-            bool valid = false;
+            var valid = false;
             if (handle == null)
                 return false;
 
             if (IntPtr.Size == 4)
             {
-                Int32 value = handle.ToInt32();
-                valid = (value != -1);
+                var value = handle.ToInt32();
+                valid = value != -1;
             }
             else if (IntPtr.Size == 8)
             {
-                Int64 value = handle.ToInt64();
-                valid = (value != -1);
+                var value = handle.ToInt64();
+                valid = value != -1;
             }
 
             return valid;
@@ -301,10 +301,10 @@ namespace CyUSB
             byte Devices = 0;
 
 
-            IntPtr hwDeviceInfo = SetupDiGetClassDevs(ref g, null, IntPtr.Zero, CyConst.DIGCF_PRESENT | CyConst.DIGCF_INTERFACEDEVICE);
+            var hwDeviceInfo = SetupDiGetClassDevs(ref g, null, IntPtr.Zero, CyConst.DIGCF_PRESENT | CyConst.DIGCF_INTERFACEDEVICE);
             if (IsHandleValid(hwDeviceInfo))
             {
-                SP_DEVICE_INTERFACE_DATA devInterfaceData = new SP_DEVICE_INTERFACE_DATA();
+                var devInterfaceData = new SP_DEVICE_INTERFACE_DATA();
 
                 devInterfaceData.cbSize = Marshal.SizeOf(devInterfaceData);
                 // if (IntPtr.Size == 8)
@@ -313,7 +313,7 @@ namespace CyUSB
                 //devInterfaceData.InterfaceClassGuid = g;
                 // Count the number of devices
                 uint i = 0;
-                bool bDone = false;
+                var bDone = false;
 
 
                 while (!bDone)
@@ -323,7 +323,7 @@ namespace CyUSB
                         Devices++;
                     else
                     {
-                        int dwLastError = Marshal.GetLastWin32Error();
+                        var dwLastError = Marshal.GetLastWin32Error();
                         if (dwLastError == CyConst.ERROR_NO_MORE_ITEMS) bDone = true;
                     }
 
@@ -340,7 +340,7 @@ namespace CyUSB
 
         internal static IntPtr GetDeviceHandle(string devPath, bool bOverlapped)
         {
-            int dummy = (int)FileAccess.ReadWrite;
+            var dummy = (int)FileAccess.ReadWrite;
 
             // This call doesn't care about the file access returned.
             return GetDeviceHandle(devPath, bOverlapped, ref dummy);
@@ -351,18 +351,18 @@ namespace CyUSB
         // This is used by CyHidDevice's Open() method.
         internal static IntPtr GetDeviceHandle(string devPath, bool bOverlapped, ref int accessMode)
         {
-            int sLen = devPath.Length;
-            byte[] path = new byte[sLen + 1];
+            var sLen = devPath.Length;
+            var path = new byte[sLen + 1];
 
             // Move the chars of the DevicePath field to the front of the array.
-            for (int i = 0; i < sLen; i++) path[i] = (byte)devPath[i];
+            for (var i = 0; i < sLen; i++) path[i] = (byte)devPath[i];
 
             // Try to get a handle, with decreasing read/write privileges.
             // (Some HID devices won't allow Read or Write access mode.)
 
             accessMode = (int)FileAccess.ReadWrite;
 
-            IntPtr handle = CreateFile(path,
+            var handle = CreateFile(path,
                                         accessMode,
                                         (int)FileShare.ReadWrite,
                                                         0,
@@ -410,23 +410,23 @@ namespace CyUSB
 
         internal static string GetDevicePath(Guid g, uint dev, byte[] enumer)
         {
-            IntPtr hDevice = CyConst.INVALID_HANDLE;
+            var hDevice = CyConst.INVALID_HANDLE;
 
-            int predictedLength = 0;
-            int actualLength = 0;
+            var predictedLength = 0;
+            var actualLength = 0;
 
-            uint flags = CyConst.DIGCF_PRESENT | (uint)((enumer == null) ? CyConst.DIGCF_INTERFACEDEVICE : CyConst.DIGCF_ALLCLASSES);
+            var flags = CyConst.DIGCF_PRESENT | (uint)(enumer == null ? CyConst.DIGCF_INTERFACEDEVICE : CyConst.DIGCF_ALLCLASSES);
 
-            IntPtr hwDeviceInfo = SetupDiGetClassDevs(ref g, enumer, IntPtr.Zero, flags);
+            var hwDeviceInfo = SetupDiGetClassDevs(ref g, enumer, IntPtr.Zero, flags);
             if (hwDeviceInfo.Equals(-1))
                 return "";
 
-            SP_DEVICE_INTERFACE_DATA devInterfaceData = new SP_DEVICE_INTERFACE_DATA();
+            var devInterfaceData = new SP_DEVICE_INTERFACE_DATA();
             devInterfaceData.cbSize = Marshal.SizeOf(devInterfaceData);
             //if (IntPtr.Size == 8)
             //devInterfaceData.cbSize = devInterfaceData.cbSize + 4;
 
-            int mysize = Marshal.SizeOf(devInterfaceData.Reserved);
+            var mysize = Marshal.SizeOf(devInterfaceData.Reserved);
             if (!SetupDiEnumDeviceInterfaces(hwDeviceInfo, 0, ref g, dev, devInterfaceData))
             {
                 SetupDiDestroyDeviceInfoList(hwDeviceInfo);
@@ -435,7 +435,7 @@ namespace CyUSB
 
             SetupDiGetDeviceInterfaceDetail(hwDeviceInfo, devInterfaceData, null, 0, ref predictedLength, null);
             //predictedLength = predictedLength+5;
-            byte[] detailData = new byte[predictedLength];
+            var detailData = new byte[predictedLength];
 
             detailData[0] = 5;  // Set the cbSize field of what would be a SP_DEVICE_INTERFACE_DETAIL_DATA struct
             if (IntPtr.Size == 8)
@@ -448,7 +448,7 @@ namespace CyUSB
             if (!SetupDiGetDeviceInterfaceDetail(hwDeviceInfo, devInterfaceData, detailData,
                     predictedLength, ref actualLength, null))
             {
-                int Error = Marshal.GetLastWin32Error();
+                var Error = Marshal.GetLastWin32Error();
                 SetupDiDestroyDeviceInfoList(hwDeviceInfo);
                 return "";
             }
@@ -458,13 +458,13 @@ namespace CyUSB
             //
             //  DWY - Ensure null terminator for string class constructor.
             //
-            char[] cData = new char[actualLength - 3];
-            for (int i = 0; i < (actualLength - 4); i++)
+            var cData = new char[actualLength - 3];
+            for (var i = 0; i < actualLength - 4; i++)
             {
                 cData[i] = (char)detailData[i + 4];
                 cData[i + 1] = '\0';
             }
-            string path = new string(cData);
+            var path = new string(cData);
 
             SetupDiDestroyDeviceInfoList(hwDeviceInfo);
             return path;

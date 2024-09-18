@@ -92,7 +92,7 @@ namespace CyUSB
 
                 if (m.WParam == CyConst.DBT_DEVICEREMOVECOMPLETE)
                 {
-                    DEV_BROADCAST_HDR bcastHdr = new DEV_BROADCAST_HDR();
+                    var bcastHdr = new DEV_BROADCAST_HDR();
                     bcastHdr = (DEV_BROADCAST_HDR)m.GetLParam(bcastHdr.GetType());
                     if (bcastHdr.dbch_devicetype == CyConst.DBT_DEVTYP_HANDLE)
                     {
@@ -115,7 +115,7 @@ namespace CyUSB
             if (m.Msg == CyConst.WM_POWERBROADCAST)
             {
                 //if (m.WParam == CyConst.PBT_APMRESUMEAUTOMATIC)
-                if ((m.WParam == CyConst.PBT_APMSUSPEND) || (m.WParam == CyConst.PBT_APMRESUMEAUTOMATIC))
+                if (m.WParam == CyConst.PBT_APMSUSPEND || m.WParam == CyConst.PBT_APMRESUMEAUTOMATIC)
                 {
                     CyConst.Hibernate_first_call = true;
                 }

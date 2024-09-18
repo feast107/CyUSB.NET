@@ -1,3 +1,4 @@
+#if !NET
 using System;
 using System.Collections;
 using System.Runtime.InteropServices;
@@ -27,14 +28,14 @@ namespace CyUSB
 
             RegisterForPnpEvents(MsgWin.Handle);
 
-            CyHidDevice tmpDev = new CyHidDevice();
+            var tmpDev = new CyHidDevice();
             int devs = tmpDev.DeviceCount;
 
             Items = new ArrayList(devs);
 
-            for (int i = 0; i < devs; i++)
+            for (var i = 0; i < devs; i++)
             {
-                CyHidDevice tmp = new CyHidDevice();
+                var tmp = new CyHidDevice();
                 if (tmp.Open((byte)i)) Items.Add(tmp);
             }
         }
@@ -44,7 +45,7 @@ namespace CyUSB
         {
             PInvoke.HidD_GetHidGuid(ref HidGuid);
 
-            DEV_BROADCAST_DEVICEINTERFACE dFilter = new DEV_BROADCAST_DEVICEINTERFACE();
+            var dFilter = new DEV_BROADCAST_DEVICEINTERFACE();
             dFilter.dbcc_size = Marshal.SizeOf(dFilter);
             dFilter.dbcc_devicetype = gc.DBT_DEVTYP_DEVICEINTERFACE;
             dFilter.dbcc_classguid = HidGuid;
@@ -59,9 +60,9 @@ namespace CyUSB
         // Indexers
         public CyHidDevice this[int index]
         {
-            get { return (CyHidDevice)Items[index]; }
+            get => (CyHidDevice)Items[index];
 
-            set { Items[index] = value; }
+            set => Items[index] = value;
         }
 
         public CyHidDevice this[int VID, int PID]
@@ -70,8 +71,8 @@ namespace CyUSB
             {
                 for (byte i = 0; i < Count; i++)
                 {
-                    CyHidDevice tmp = (CyHidDevice)Items[i];
-                    if ((VID == tmp.VendorID) && (PID == tmp.ProductID)) return tmp;
+                    var tmp = (CyHidDevice)Items[i];
+                    if (VID == tmp.VendorID && PID == tmp.ProductID) return tmp;
                 }
 
                 return null;
@@ -84,9 +85,9 @@ namespace CyUSB
             {
                 for (byte i = 0; i < Count; i++)
                 {
-                    CyHidDevice tmp = (CyHidDevice)Items[i];
-                    if ((VID == tmp.VendorID) && (PID == tmp.ProductID) &&
-                            (UsagePg == tmp.UsagePage) && (Usage == tmp.Usage)) return tmp;
+                    var tmp = (CyHidDevice)Items[i];
+                    if (VID         == tmp.VendorID  && PID   == tmp.ProductID &&
+                            UsagePg == tmp.UsagePage && Usage == tmp.Usage) return tmp;
                 }
 
                 return null;
@@ -99,7 +100,7 @@ namespace CyUSB
             {
                 for (byte i = 0; i < Count; i++)
                 {
-                    CyHidDevice tmp = (CyHidDevice)Items[i];
+                    var tmp = (CyHidDevice)Items[i];
                     if (sMfg.Equals(tmp.Manufacturer) && sProd.Equals(tmp.Product)) return tmp;
                 }
 
@@ -113,9 +114,9 @@ namespace CyUSB
             {
                 for (byte i = 0; i < Count; i++)
                 {
-                    CyHidDevice tmp = (CyHidDevice)Items[i];
+                    var tmp = (CyHidDevice)Items[i];
                     if (sMfg.Equals(tmp.Manufacturer) && sProd.Equals(tmp.Product) &&
-                            (UsagePg == tmp.UsagePage) && (Usage == tmp.Usage)) return tmp;
+                            UsagePg == tmp.UsagePage  && Usage == tmp.Usage) return tmp;
                 }
 
                 return null;
@@ -123,10 +124,8 @@ namespace CyUSB
         }
 
 
-        public int Count
-        {
-            get { return Items.Count; }
-        }
-
+        public int Count => Items.Count;
     }
 }
+
+#endif

@@ -29,17 +29,11 @@ namespace CyUSB
     {
         public CyUSBInterface[] Interfaces;
 
-        byte _bInterfaceNumber;
-        public byte bInterfaceNumber
-        {
-            get { return _bInterfaceNumber; }
-        }
+        byte        _bInterfaceNumber;
+        public byte bInterfaceNumber => _bInterfaceNumber;
 
-        byte _AltInterfacesCount;
-        public byte AltInterfacesCount
-        {
-            get { return _AltInterfacesCount; }
-        }
+        byte        _AltInterfacesCount;
+        public byte AltInterfacesCount => _AltInterfacesCount;
 
         public CyUSBInterfaceContainer(byte intfcNum, byte altIntfcCount)
         {
@@ -52,14 +46,16 @@ namespace CyUSB
         {
             get
             {
-                string itmp = "Interface " + bInterfaceNumber.ToString();
-                TreeNode[] altTree = new TreeNode[AltInterfacesCount];
-                for (int i = 0; i < AltInterfacesCount; i++)
+                var itmp = "Interface " + bInterfaceNumber.ToString();
+                var altTree = new TreeNode[AltInterfacesCount];
+                for (var i = 0; i < AltInterfacesCount; i++)
                 {
                     altTree[i] = Interfaces[i].Tree;
                 }
-                TreeNode iNode = new TreeNode(itmp, altTree);
-                iNode.Tag = this;
+                var iNode = new TreeNode(itmp, altTree)
+                {
+                    Tag = this
+                };
 
                 return iNode;
             }
@@ -67,9 +63,9 @@ namespace CyUSB
 
         public override string ToString()
         {
-            StringBuilder s = new StringBuilder("\t<INTERFACE " + bInterfaceNumber.ToString() + ">\r\n");
+            var s = new StringBuilder("\t<INTERFACE " + bInterfaceNumber.ToString() + ">\r\n");
 
-            for (int i = 0; i < AltInterfacesCount; i++)
+            for (var i = 0; i < AltInterfacesCount; i++)
                 s.Append(Interfaces[i].ToString());
 
             s.Append("\t<INTERFACE " + bInterfaceNumber.ToString() + ">\r\n");
@@ -85,76 +81,43 @@ namespace CyUSB
     {
         public CyUSBEndPoint[] EndPoints;  // Holds pointers to all the interface's endpoints, plus a pointer to the Control endpoint zero
 
-        byte _bLength;
-        public byte bLength
-        {
-            get { return _bLength; }
-        }
+        byte        _bLength;
+        public byte bLength => _bLength;
 
-        byte _bDescriptorType;
-        public byte bDescriptorType
-        {
-            get { return _bDescriptorType; }
-        }
+        byte        _bDescriptorType;
+        public byte bDescriptorType => _bDescriptorType;
 
-        byte _bInterfaceNumber;
-        public byte bInterfaceNumber
-        {
-            get { return _bInterfaceNumber; }
-        }
+        byte        _bInterfaceNumber;
+        public byte bInterfaceNumber => _bInterfaceNumber;
 
-        byte _bAlternateSetting;
-        public byte bAlternateSetting
-        {
-            get { return _bAlternateSetting; }
-        }
+        byte        _bAlternateSetting;
+        public byte bAlternateSetting => _bAlternateSetting;
 
-        byte _bNumEndpoints;           // Not counting the control endpoint
-        public byte bNumEndpoints
-        {
-            get { return _bNumEndpoints; }
-        }
+        byte        _bNumEndpoints;           // Not counting the control endpoint
+        public byte bNumEndpoints => _bNumEndpoints;
 
-        byte _bInterfaceClass;
-        public byte bInterfaceClass
-        {
-            get { return _bInterfaceClass; }
-        }
+        byte        _bInterfaceClass;
+        public byte bInterfaceClass => _bInterfaceClass;
 
-        byte _bInterfaceSubClass;
-        public byte bInterfaceSubClass
-        {
-            get { return _bInterfaceSubClass; }
-        }
+        byte        _bInterfaceSubClass;
+        public byte bInterfaceSubClass => _bInterfaceSubClass;
 
-        byte _bInterfaceProtocol;
-        public byte bInterfaceProtocol
-        {
-            get { return _bInterfaceProtocol; }
-        }
+        byte        _bInterfaceProtocol;
+        public byte bInterfaceProtocol => _bInterfaceProtocol;
 
-        byte _iInterface;
-        public byte iInterface
-        {
-            get { return _iInterface; }
-        }
+        byte        _iInterface;
+        public byte iInterface => _iInterface;
 
         internal byte _bAltSettings;
-        public byte bAltSettings
-        {
-            get { return _bAltSettings; }
-        }
+        public   byte bAltSettings => _bAltSettings;
 
-        ushort _wTotalLength;          // Needed in case Intfc has additional (non-endpt) descriptors
-        public ushort wTotalLength
-        {
-            get { return _wTotalLength; }
-        }
+        ushort        _wTotalLength;          // Needed in case Intfc has additional (non-endpt) descriptors
+        public ushort wTotalLength => _wTotalLength;
 
-        unsafe internal CyUSBInterface(IntPtr handle, byte* DescrData, CyControlEndPoint ctlEndPt)
+        internal unsafe CyUSBInterface(IntPtr handle, byte* DescrData, CyControlEndPoint ctlEndPt)
         {
 
-            USB_INTERFACE_DESCRIPTOR* pIntfcDescriptor = (USB_INTERFACE_DESCRIPTOR*)DescrData;
+            var pIntfcDescriptor = (USB_INTERFACE_DESCRIPTOR*)DescrData;
 
 
             _bLength = pIntfcDescriptor->bLength;
@@ -170,10 +133,10 @@ namespace CyUSB
             _bAltSettings = 0;
             _wTotalLength = bLength;
 
-            byte* desc = (byte*)(DescrData + pIntfcDescriptor->bLength);
+            var desc = (byte*)(DescrData + pIntfcDescriptor->bLength);
 
             int i;
-            int unexpected = 0;
+            var unexpected = 0;
 
             EndPoints = new CyUSBEndPoint[bNumEndpoints + 1];
             EndPoints[0] = ctlEndPt;
@@ -181,7 +144,7 @@ namespace CyUSB
             for (i = 1; i <= bNumEndpoints; i++)
             {
 
-                USB_ENDPOINT_DESCRIPTOR* endPtDesc = (USB_ENDPOINT_DESCRIPTOR*)desc;
+                var endPtDesc = (USB_ENDPOINT_DESCRIPTOR*)desc;
                 _wTotalLength += endPtDesc->bLength;
 
 
@@ -222,10 +185,10 @@ namespace CyUSB
 
             }
         }
-        unsafe internal CyUSBInterface(IntPtr handle, byte* DescrData, CyControlEndPoint ctlEndPt, byte usb30dummy)
+        internal unsafe CyUSBInterface(IntPtr handle, byte* DescrData, CyControlEndPoint ctlEndPt, byte usb30dummy)
         {
 
-            USB_INTERFACE_DESCRIPTOR* pIntfcDescriptor = (USB_INTERFACE_DESCRIPTOR*)DescrData;
+            var pIntfcDescriptor = (USB_INTERFACE_DESCRIPTOR*)DescrData;
 
 
             _bLength = pIntfcDescriptor->bLength;
@@ -241,10 +204,10 @@ namespace CyUSB
             _bAltSettings = 0;
             _wTotalLength = bLength;
 
-            byte* desc = (byte*)(DescrData + pIntfcDescriptor->bLength);
+            var desc = (byte*)(DescrData + pIntfcDescriptor->bLength);
 
             int i;
-            int unexpected = 0;
+            var unexpected = 0;
 
             EndPoints = new CyUSBEndPoint[bNumEndpoints + 1];
             EndPoints[0] = ctlEndPt;
@@ -252,17 +215,17 @@ namespace CyUSB
             for (i = 1; i <= bNumEndpoints; i++)
             {
 
-                bool bSSDec = false;
-                USB_ENDPOINT_DESCRIPTOR* endPtDesc = (USB_ENDPOINT_DESCRIPTOR*)desc;
+                var bSSDec = false;
+                var endPtDesc = (USB_ENDPOINT_DESCRIPTOR*)desc;
                 desc += endPtDesc->bLength;
-                USB_SUPERSPEED_ENDPOINT_COMPANION_DESCRIPTOR* ssendPtDesc = (USB_SUPERSPEED_ENDPOINT_COMPANION_DESCRIPTOR*)desc;
+                var ssendPtDesc = (USB_SUPERSPEED_ENDPOINT_COMPANION_DESCRIPTOR*)desc;
                 _wTotalLength += endPtDesc->bLength;
 
                 if (ssendPtDesc != null)
-                    bSSDec = (ssendPtDesc->bDescriptorType == CyConst.USB_SUPERSPEED_ENDPOINT_COMPANION);
+                    bSSDec = ssendPtDesc->bDescriptorType == CyConst.USB_SUPERSPEED_ENDPOINT_COMPANION;
 
 
-                if ((endPtDesc->bDescriptorType == CyConst.USB_ENDPOINT_DESCRIPTOR_TYPE) && bSSDec)
+                if (endPtDesc->bDescriptorType == CyConst.USB_ENDPOINT_DESCRIPTOR_TYPE && bSSDec)
                 {
                     switch (endPtDesc->bmAttributes)
                     {
@@ -282,7 +245,7 @@ namespace CyUSB
                     _wTotalLength += ssendPtDesc->bLength;
                     desc += ssendPtDesc->bLength;
                 }
-                else if ((endPtDesc->bDescriptorType == CyConst.USB_ENDPOINT_DESCRIPTOR_TYPE))
+                else if (endPtDesc->bDescriptorType == CyConst.USB_ENDPOINT_DESCRIPTOR_TYPE)
                 {
                     switch (endPtDesc->bmAttributes)
                     {
@@ -322,16 +285,18 @@ namespace CyUSB
         {
             get
             {
-                string tmp = "Alternate Setting " + bAlternateSetting.ToString();
+                var tmp = "Alternate Setting " + bAlternateSetting.ToString();
 
                 //string tmp = "Interface " + bInterfaceNumber.ToString();
 
-                TreeNode[] eTree = new TreeNode[_bNumEndpoints];
-                for (int i = 0; i < _bNumEndpoints; i++)
+                var eTree = new TreeNode[_bNumEndpoints];
+                for (var i = 0; i < _bNumEndpoints; i++)
                     eTree[i] = EndPoints[i + 1].Tree;
 
-                TreeNode t = new TreeNode(tmp, eTree);
-                t.Tag = this;
+                var t = new TreeNode(tmp, eTree)
+                {
+                    Tag = this
+                };
 
                 return t;
             }
@@ -340,19 +305,19 @@ namespace CyUSB
 
         public override string ToString()
         {
-            StringBuilder s = new StringBuilder("\t\t<INTERFACE>\r\n");
+            var s = new StringBuilder("\t\t<INTERFACE>\r\n");
 
-            s.Append(string.Format("\t\t\tInterface=\"{0}\"\r\n", _iInterface));
-            s.Append(string.Format("\t\t\tInterfaceNumber=\"{0}\"\r\n", _bInterfaceNumber));
-            s.Append(string.Format("\t\t\tAltSetting=\"{0}\"\r\n", _bAlternateSetting));
-            s.Append(string.Format("\t\t\tClass=\"{0:X2}h\"\r\n", _bInterfaceClass));
-            s.Append(string.Format("\t\t\tSubclass=\"{0:X2}h\"\r\n", _bInterfaceSubClass));
-            s.Append(string.Format("\t\t\tProtocol=\"{0}\"\r\n", _bInterfaceProtocol));
-            s.Append(string.Format("\t\t\tEndpoints=\"{0}\"\r\n", _bNumEndpoints));
-            s.Append(string.Format("\t\t\tDescriptorType=\"{0}\"\r\n", _bDescriptorType));
-            s.Append(string.Format("\t\t\tDescriptorLength=\"{0}\"\r\n", _bLength));
+            s.Append($"\t\t\tInterface=\"{_iInterface}\"\r\n");
+            s.Append($"\t\t\tInterfaceNumber=\"{_bInterfaceNumber}\"\r\n");
+            s.Append($"\t\t\tAltSetting=\"{_bAlternateSetting}\"\r\n");
+            s.Append($"\t\t\tClass=\"{_bInterfaceClass:X2}h\"\r\n");
+            s.Append($"\t\t\tSubclass=\"{_bInterfaceSubClass:X2}h\"\r\n");
+            s.Append($"\t\t\tProtocol=\"{_bInterfaceProtocol}\"\r\n");
+            s.Append($"\t\t\tEndpoints=\"{_bNumEndpoints}\"\r\n");
+            s.Append($"\t\t\tDescriptorType=\"{_bDescriptorType}\"\r\n");
+            s.Append($"\t\t\tDescriptorLength=\"{_bLength}\"\r\n");
 
-            for (int i = 0; i < _bNumEndpoints; i++)
+            for (var i = 0; i < _bNumEndpoints; i++)
                 s.Append(EndPoints[i + 1].ToString());
 
             s.Append("\t\t</INTERFACE>\r\n");

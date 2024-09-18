@@ -31,13 +31,7 @@ namespace CyUSB
     public static class TTLock
     {
         static readonly Object thisLock = new Object();        
-        public static Object GlobalWriteLock
-        {
-            get
-            {
-                return thisLock;
-            }
-        }
+        public static   Object GlobalWriteLock => thisLock;
     }
     
     public class TTransaction
@@ -90,7 +84,7 @@ namespace CyUSB
         {
             lock (TTLock.GlobalWriteLock)
             {
-                BinaryWriter wr = new BinaryWriter(f);
+                var wr = new BinaryWriter(f);
                 wr.Write(this.Signature);
                 wr.Write(this.RecordSize);
                 wr.Write(this.HeaderSize);
@@ -118,7 +112,7 @@ namespace CyUSB
         {
             lock (TTLock.GlobalWriteLock)
             {
-                BinaryReader rd = new BinaryReader(f);
+                var rd = new BinaryReader(f);
 
                 this.Signature = rd.ReadUInt32();
                 this.RecordSize = rd.ReadUInt32();
@@ -146,7 +140,7 @@ namespace CyUSB
             {
                 lock (TTLock.GlobalWriteLock)
                 {
-                    BinaryReader rd = new BinaryReader(f);
+                    var rd = new BinaryReader(f);
                     rd.Read(buffer, 0, len);
                 }
             }
@@ -158,7 +152,7 @@ namespace CyUSB
             {
                 lock (TTLock.GlobalWriteLock)
                 {
-                    BinaryWriter wr = new BinaryWriter(f);
+                    var wr = new BinaryWriter(f);
                     wr.Write(buffer, 0, len);
                     Thread.Sleep(0);
                 }

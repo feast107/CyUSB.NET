@@ -30,7 +30,7 @@ namespace CyUSB
     public class CyFX3Device : CyUSBDevice
     {
         internal const uint SPI_FLASH_PAGE_SIZE_IN_BYTE = 256;
-        internal const uint SPI_FLASH_SECTOR_SIZE_IN_BYTE = (64 * 1024);
+        internal const uint SPI_FLASH_SECTOR_SIZE_IN_BYTE = 64 * 1024;
         internal const uint CYWB_BL_MAX_BUFFER_SIZE_WHEN_USING_EP0_TRANSPORT = CyConst.CONTROLTFRER_DATA_LENGTH; // (8 * 512); // 4KB
         
         FileStream m_script_file_name;
@@ -59,7 +59,7 @@ namespace CyUSB
         {
             //Dire : in, Target : Device, ReqCode:0xA0,wValue:0x0000,wIndex:0x0000
             // This function checks for bootloader,it will return false if it is not running.
-            byte[] buf = new byte[1];
+            var buf = new byte[1];
             uint len = 1;
             return Ep0VendorCommand(ref buf, ref len, true, 0xA0, 0x0000);
         }
@@ -92,7 +92,7 @@ namespace CyUSB
         }
         private bool Ep0VendorCommand(ref byte[] buf, ref uint buflen, bool IsFromDevice, byte ReqCode, uint Value)
         {
-            TTransaction m_Xaction = new TTransaction();
+            var m_Xaction = new TTransaction();
             ControlEndPt.TimeOut = 5000;
             ControlEndPt.Target = CyConst.TGT_DEVICE;
             ControlEndPt.ReqType = CyConst.REQ_VENDOR;
@@ -103,12 +103,12 @@ namespace CyUSB
             ControlEndPt.ReqCode = ReqCode;
             ControlEndPt.Value = (ushort)(Value & 0x0000FFFF); // Get 16-bit LSB
             ControlEndPt.Index = (ushort)(Value >> 16);        // Get 16-bit MSB
-            int len = (int)buflen;
+            var len = (int)buflen;
 
             // Handle the case where transfer length is 0 (used to send the Program Entry)
             if (buflen == 0)
             {
-                if (m_bRecording && (m_script_file_name != null))
+                if (m_bRecording && m_script_file_name != null)
                 {
                     m_Xaction.AltIntfc = m_AltIntfc;
                     m_Xaction.ConfigNum = m_ConfigNum;
@@ -133,26 +133,26 @@ namespace CyUSB
 
             else
             {
-                bool bRetCode = false;
-                int Stagelen = 0;
-                int BufIndex = 0;
+                var bRetCode = false;
+                var Stagelen = 0;
+                var BufIndex = 0;
                 while (len > 0)
                 {
                     if (len >= 65535)
                         Stagelen = 65535;
                     else
-                        Stagelen = (len) % 65535;
+                        Stagelen = len % 65535;
 
                     // Allocate the buffer
-                    byte[] StageBuf = new byte[Stagelen];
+                    var StageBuf = new byte[Stagelen];
                     if (!IsFromDevice)
                     {//write operation
-                        for (int i = 0; i < Stagelen; i++)
+                        for (var i = 0; i < Stagelen; i++)
                             StageBuf[i] = buf[BufIndex + i];
                     }
 
                     bRetCode = ControlEndPt.XferData(ref  StageBuf, ref Stagelen);
-                    if (m_bRecording && (m_script_file_name != null))
+                    if (m_bRecording && m_script_file_name != null)
                     {
                         m_Xaction.AltIntfc = m_AltIntfc;
                         m_Xaction.ConfigNum = m_ConfigNum;
@@ -177,7 +177,7 @@ namespace CyUSB
 
                     if (IsFromDevice)
                     {//read operation
-                        for (int i = 0; i < Stagelen; i++)
+                        for (var i = 0; i < Stagelen; i++)
                             buf[BufIndex + i] = StageBuf[i];
                     }
 
@@ -216,27 +216,26 @@ namespace CyUSB
             }
 
             //allocate the memory to hold the firmware image
-            byte[] FwImage = new byte[fwSize];
+            var FwImage = new byte[fwSize];
 
             fStream.Read(FwImage, 0, (int)fwSize);
             fStream.Close();
-            // call api to download the image
-            if (enMediaType == FX3_FWDWNLOAD_MEDIA_TYPE.RAM)
-                return DownloadFwToRam(ref FwImage, ref fwSize);
-            else if (enMediaType == FX3_FWDWNLOAD_MEDIA_TYPE.I2CE2PROM)
-                    return DownloadUserIMGtoI2CE2PROM(ref FwImage, ref fwSize);
-            else if (enMediaType == FX3_FWDWNLOAD_MEDIA_TYPE.SPIFLASH)
-                return DownloadUserIMGtoSPIFLASH(ref FwImage, ref fwSize);
-            else
-                return FX3_FWDWNLOAD_ERROR_CODE.INVALID_MEDIA_TYPE;
+            return enMediaType switch
+            {
+                // call api to download the image
+                FX3_FWDWNLOAD_MEDIA_TYPE.RAM       => DownloadFwToRam(ref FwImage, ref fwSize),
+                FX3_FWDWNLOAD_MEDIA_TYPE.I2CE2PROM => DownloadUserIMGtoI2CE2PROM(ref FwImage, ref fwSize),
+                FX3_FWDWNLOAD_MEDIA_TYPE.SPIFLASH  => DownloadUserIMGtoSPIFLASH(ref FwImage, ref fwSize),
+                _                                  => FX3_FWDWNLOAD_ERROR_CODE.INVALID_MEDIA_TYPE
+            };
         }
 
-        unsafe internal FX3_FWDWNLOAD_ERROR_CODE DownloadFwToRam(ref byte[] buf, ref uint buflen)
+        internal unsafe FX3_FWDWNLOAD_ERROR_CODE DownloadFwToRam(ref byte[] buf, ref uint buflen)
         {
             const int BUFSIZE_UPORT = CyConst.CONTROLTFRER_DATA_LENGTH;
 
-            byte[] downloadbuf = new byte[BUFSIZE_UPORT];
-            byte[] uploadbuf = new byte[BUFSIZE_UPORT];
+            var downloadbuf = new byte[BUFSIZE_UPORT];
+            var uploadbuf = new byte[BUFSIZE_UPORT];
             uint ComputeCheckSum = 0;
             uint ExpectedCheckSum = 0;
             uint SectionLength = 0;
@@ -244,11 +243,11 @@ namespace CyUSB
             uint DownloadAddress = 0;
             uint ProgramEntry = 0;
             uint FwImagePtr = 0;
-            bool usbSuspendTestRequired = false;
+            var usbSuspendTestRequired = false;
             // Initialize computed checksum
             ComputeCheckSum = 0;
             // Check "CY" signature (0x43,0x59) and download the firmware image	        
-            if ((buf[FwImagePtr] != 0x43) || (buf[FwImagePtr + 1] != 0x59))
+            if (buf[FwImagePtr] != 0x43 || buf[FwImagePtr + 1] != 0x59)
             {// signature doesn't match		
                 return FX3_FWDWNLOAD_ERROR_CODE.INVALID_FWSIGNATURE;
             }
@@ -256,8 +255,8 @@ namespace CyUSB
             // Skip the two bytes signature and the following two bytes
             FwImagePtr += 4;
             // Download one section at a time to the device, compute checksum, and upload-verify it
-            bool executeUsbSuspendTest = usbSuspendTestRequired;
-            bool isTrue = true;
+            var executeUsbSuspendTest = usbSuspendTestRequired;
+            var isTrue = true;
             while (isTrue)
             {
                 SectionLength = 0;
@@ -273,7 +272,7 @@ namespace CyUSB
                 CYWB_BL_4_BYTES_COPY(ref SectionAddress, ref buf, ref FwImagePtr);
                 FwImagePtr += 4;
                 // Download and upload-verify SSV_BUFFER_SIZE_FOR_DOWNLOAD_FROM_UPORT maximum bytes at a time
-                uint bytesLeftToDownload = SectionLength;
+                var bytesLeftToDownload = SectionLength;
                 DownloadAddress = SectionAddress;
 
                 // The FPGA does not seem to always be reliable: if data read back do not match data written try again once
@@ -335,7 +334,7 @@ namespace CyUSB
                         }
 
                         //compare the downloaded and uploaded data, if doesn't match then return error
-                        for (int i = 0; i < bytesToTransfer; i++)
+                        for (var i = 0; i < bytesToTransfer; i++)
                         {
                             if (downloadbuf[i] != uploadbuf[i])
                             {
@@ -358,7 +357,7 @@ namespace CyUSB
                     {
                         // We do it ony once before the start of the second transfer (there is usually more than one!)
                         executeUsbSuspendTest = false;
-                        bool trySuspendAgain = true;
+                        var trySuspendAgain = true;
                         while (trySuspendAgain)
                         {
                             //LogMessage(LOG_INFO, 0, "");
@@ -388,7 +387,7 @@ namespace CyUSB
                         System.Threading.Thread.Sleep(100);
 
                         // Verify that we have access to the device
-                        if (!(UploadBufferFromDevice(ref uploadbuf, ref bytesToTransfer, DownloadAddress)))
+                        if (!UploadBufferFromDevice(ref uploadbuf, ref bytesToTransfer, DownloadAddress))
                         {
                             //LogMessage(LOG_ERROR, 0, " Could not recover from USB cable disconnect/connect (Manual USB Suspend test)");
                             return FX3_FWDWNLOAD_ERROR_CODE.FAILED;
@@ -426,7 +425,7 @@ namespace CyUSB
             }
 
             // Transfer execution to Program Entry            
-            byte[] dummyBuffer = new byte[1];
+            var dummyBuffer = new byte[1];
             uint len = 0;
             // Some of the xHCI controller have issue with Control In transfer, due to this below request fail. 
             // This request send ProgramEntry.
@@ -442,21 +441,21 @@ namespace CyUSB
             return FX3_FWDWNLOAD_ERROR_CODE.SUCCESS;
         }
 
-        unsafe internal FX3_FWDWNLOAD_ERROR_CODE DownloadUserIMGtoI2CE2PROM(ref byte[] buf, ref uint buflen)
+        internal unsafe FX3_FWDWNLOAD_ERROR_CODE DownloadUserIMGtoI2CE2PROM(ref byte[] buf, ref uint buflen)
         {
-            int STAGE_SIZE = CyConst.CONTROLTFRER_DATA_LENGTH;
-            byte[] downloadbuf = new byte[STAGE_SIZE];
-            int NoOfStage = ((int)buflen / STAGE_SIZE);
-            int LastStage = ((int)buflen % STAGE_SIZE);
+            var  STAGE_SIZE      = CyConst.CONTROLTFRER_DATA_LENGTH;
+            var  downloadbuf     = new byte[STAGE_SIZE];
+            var  NoOfStage       = (int)buflen / STAGE_SIZE;
+            var  LastStage       = (int)buflen % STAGE_SIZE;
             uint DownloadAddress = 0;
-            int FwImagePtr = 0;
-            int StageSize = STAGE_SIZE;            
-            int maxpkt = ControlEndPt.MaxPktSize;
+            var  FwImagePtr      = 0;
+            var  StageSize       = STAGE_SIZE;            
+            var  maxpkt          = ControlEndPt.MaxPktSize;
             //Get the I2C addressing size
-            byte ImgI2CSizeByte = buf[2]; // the 2nd byte of the IMG file will tell us the I2EPROM internal addressing.                         
+            var ImgI2CSizeByte = buf[2]; // the 2nd byte of the IMG file will tell us the I2EPROM internal addressing.                         
             uint AddresingStageSize = 0;
             ImgI2CSizeByte = (byte)((ImgI2CSizeByte >> 1) & 0x07); // Bit3:1 represent the addressing            
-            bool IsMicroShipE2Prom = false;
+            var IsMicroShipE2Prom = false;
 
             switch (ImgI2CSizeByte)
             {
@@ -464,23 +463,23 @@ namespace CyUSB
                 case 1:
                     return FX3_FWDWNLOAD_ERROR_CODE.I2CEEPROM_UNKNOWN_I2C_SIZE;
                 case 2:
-                    AddresingStageSize = (4 * 1024); // 4KByte
+                    AddresingStageSize = 4 * 1024; // 4KByte
                     break;
                 case 3:
-                    AddresingStageSize = (8 * 1024); // 8KByte
+                    AddresingStageSize = 8 * 1024; // 8KByte
                     break;
                 case 4:
-                    AddresingStageSize = (16 * 1024); // 16KByte
+                    AddresingStageSize = 16 * 1024; // 16KByte
                     break;
                 case 5:
-                    AddresingStageSize = (32 * 1024); // 32KByte
+                    AddresingStageSize = 32 * 1024; // 32KByte
                     break;
                 case 6:
-                    AddresingStageSize = (64 * 1024); // 64KByte
+                    AddresingStageSize = 64 * 1024; // 64KByte
                     break;
                 case 7:
                     IsMicroShipE2Prom = true; // 128KByte Addressing for Microchip.
-                    AddresingStageSize = (64 * 1024); // 64KByte // case 7 represent 128Kbyte but it follow 64Kbyte addressing
+                    AddresingStageSize = 64 * 1024; // 64KByte // case 7 represent 128Kbyte but it follow 64Kbyte addressing
                     break;                
                 default:
                     return FX3_FWDWNLOAD_ERROR_CODE.I2CEEPROM_UNKNOWN_I2C_SIZE;
@@ -512,9 +511,9 @@ namespace CyUSB
                 // Address calculation done in the below box
                 if (IsMicroShipE2Prom)
                 {//Microchip Addressing(0-(1-64),4(64 to 128),1(128 to 192 ),5(192 to 256))
-                    if (FwImagePtr >= (128 * 1024))
+                    if (FwImagePtr >= 128 * 1024)
                     {
-                        if ((FwImagePtr % AddresingStageSize) == 0)
+                        if (FwImagePtr % AddresingStageSize == 0)
                         {
                             if (ControlEndPt.Value == 0x04)
                                 ControlEndPt.Value = 0x01;
@@ -524,7 +523,7 @@ namespace CyUSB
                             ControlEndPt.Index = 0;
                         }
                     }
-                    else if ((FwImagePtr % AddresingStageSize) == 0)
+                    else if (FwImagePtr % AddresingStageSize == 0)
                     {                      
                         ControlEndPt.Value = 0x04;
                         ControlEndPt.Index = 0;
@@ -532,7 +531,7 @@ namespace CyUSB
                 }
                 else
                 {//ATMEL addressing sequential
-                    if ((FwImagePtr % AddresingStageSize)==0)
+                    if (FwImagePtr % AddresingStageSize==0)
                     {// Increament the Value field to represent the address and reset the Index value to zero.
                         ControlEndPt.Value += 0x01;
                         if(ControlEndPt.Value>=8)
@@ -549,10 +548,10 @@ namespace CyUSB
                 for (uint j = 0; j < LastStage; j++)
                     downloadbuf[j] = buf[FwImagePtr + j];
 
-                if ((LastStage % maxpkt) != 0)
+                if (LastStage % maxpkt != 0)
                 {// make it multiple of max packet size
-                    int diff = (maxpkt - (LastStage % maxpkt));
-                    for (int j = LastStage; j < (LastStage + diff); j++)
+                    var diff = maxpkt - LastStage % maxpkt;
+                    for (var j = LastStage; j < LastStage + diff; j++)
                         downloadbuf[j] = 0;
 
                     LastStage += diff;
@@ -578,25 +577,25 @@ namespace CyUSB
             return FX3_FWDWNLOAD_ERROR_CODE.SUCCESS;
         }
 
-        unsafe internal FX3_FWDWNLOAD_ERROR_CODE EraseSectorOfSPIFlash(uint SectorNumber)
+        internal unsafe FX3_FWDWNLOAD_ERROR_CODE EraseSectorOfSPIFlash(uint SectorNumber)
         {
             bool ret;
-            byte[] buf = new byte[1];
+            var buf = new byte[1];
             byte ReqCode = 0xC4;
             uint buflen = 0;
             uint elapsed = 0;
             buf[0] = 1;
 
             // Value = isErase, index = sector number
-            ret = Ep0VendorCommand(ref buf, ref buflen, false, ReqCode, (1 + (SectorNumber << 16)));
+            ret = Ep0VendorCommand(ref buf, ref buflen, false, ReqCode, 1 + (SectorNumber << 16));
             //et = Ep0VendorCommand(usbDevice, CyFalse, 0xc4, (1 + (sectorNumber << 16)), 0, 0);
             if (ret)
             {
                 // Check the status of erase for max of 10 Seconds. Value should be 0
                 buflen = 1;
-                while ((buf[0] != 0) && (elapsed < 10000))
+                while (buf[0] != 0 && elapsed < 10000)
                 {
-                    if (!Ep0VendorCommand(ref buf, ref buflen, true, ReqCode, (0 + (SectorNumber << 16))))
+                    if (!Ep0VendorCommand(ref buf, ref buflen, true, ReqCode, 0 + (SectorNumber << 16)))
                         return FX3_FWDWNLOAD_ERROR_CODE.FAILED;
 
                     System.Threading.Thread.Sleep(1000);
@@ -613,21 +612,21 @@ namespace CyUSB
             return FX3_FWDWNLOAD_ERROR_CODE.SUCCESS;
         }
 
-        unsafe internal bool WriteToSPIFlash(ref byte[] Buf, ref uint buflen, ref uint ByteAddress)
+        internal unsafe bool WriteToSPIFlash(ref byte[] Buf, ref uint buflen, ref uint ByteAddress)
         {
             byte ReqCode = 0xC2;
-            return Ep0VendorCommand(ref Buf, ref buflen, false, ReqCode, ((ByteAddress / SPI_FLASH_PAGE_SIZE_IN_BYTE) << 16));
+            return Ep0VendorCommand(ref Buf, ref buflen, false, ReqCode, (ByteAddress / SPI_FLASH_PAGE_SIZE_IN_BYTE) << 16);
         }
 
-        unsafe internal FX3_FWDWNLOAD_ERROR_CODE DownloadUserIMGtoSPIFLASH(ref byte[] buf, ref uint buflen)
+        internal unsafe FX3_FWDWNLOAD_ERROR_CODE DownloadUserIMGtoSPIFLASH(ref byte[] buf, ref uint buflen)
         {
             // The size of the image needs to be rounded to a multiple of the SPI page size. */
-            uint ImageSizeInPage = (buflen + SPI_FLASH_PAGE_SIZE_IN_BYTE - 1) / SPI_FLASH_PAGE_SIZE_IN_BYTE;
-            uint TotalNumOfByteToWrote = ImageSizeInPage * SPI_FLASH_PAGE_SIZE_IN_BYTE;
+            var ImageSizeInPage = (buflen + SPI_FLASH_PAGE_SIZE_IN_BYTE - 1) / SPI_FLASH_PAGE_SIZE_IN_BYTE;
+            var TotalNumOfByteToWrote = ImageSizeInPage * SPI_FLASH_PAGE_SIZE_IN_BYTE;
             // Sectors needs to be erased in case of SPI. Sector size = 64k. Page Size = 256 bytes. 1 Sector = 256 pages.
             // Calculate the number of sectors needed to write firmware image and erase them.
-            uint NumOfSector = buflen / SPI_FLASH_SECTOR_SIZE_IN_BYTE;
-            if ((buflen % SPI_FLASH_SECTOR_SIZE_IN_BYTE) != 0)
+            var NumOfSector = buflen / SPI_FLASH_SECTOR_SIZE_IN_BYTE;
+            if (buflen % SPI_FLASH_SECTOR_SIZE_IN_BYTE != 0)
                 NumOfSector++;
             //Erase the sectors
             for (uint i = 0; i < NumOfSector; i++)
@@ -638,24 +637,24 @@ namespace CyUSB
                 }
             }
             //Write the firmware to the SPI flash
-            uint numberOfBytesLeftToWrite = TotalNumOfByteToWrote; // Current number of bytes left to write
+            var numberOfBytesLeftToWrite = TotalNumOfByteToWrote; // Current number of bytes left to write
             //byte *imagePointer_p = buf; // Current image pointer
             uint FwFilePointer = 0;
             uint massStorageByteAddress = 0; // Current Mass Storage Byte Address            
-            byte[] WriteBuf = new byte[CYWB_BL_MAX_BUFFER_SIZE_WHEN_USING_EP0_TRANSPORT];
+            var WriteBuf = new byte[CYWB_BL_MAX_BUFFER_SIZE_WHEN_USING_EP0_TRANSPORT];
 
             while (numberOfBytesLeftToWrite > 0)
             {
-                uint numberOfBytesToWrite = CYWB_BL_MAX_BUFFER_SIZE_WHEN_USING_EP0_TRANSPORT;
+                var numberOfBytesToWrite = CYWB_BL_MAX_BUFFER_SIZE_WHEN_USING_EP0_TRANSPORT;
 
                 if (numberOfBytesLeftToWrite < CYWB_BL_MAX_BUFFER_SIZE_WHEN_USING_EP0_TRANSPORT)
                 {
                     numberOfBytesToWrite = numberOfBytesLeftToWrite;
                 }
                 // Trigger a mass storage write...
-                for (int i = 0; i < numberOfBytesToWrite; i++)
+                for (var i = 0; i < numberOfBytesToWrite; i++)
                 {
-                    if ((FwFilePointer + i) < buflen)
+                    if (FwFilePointer + i < buflen)
                         WriteBuf[i] = buf[i + FwFilePointer];
                 }
 

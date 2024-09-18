@@ -34,17 +34,14 @@ namespace CyUSB
     /// </summary>
     public class CyUSBStorDevice : USBDevice
     {
-        int _BlockSize;
-        public int BlockSize
-        {
-            get { return _BlockSize; }
-        }
+        int        _BlockSize;
+        public int BlockSize => _BlockSize;
 
         uint _TimeOut;
         public uint TimeOut
         {
-            get { return _TimeOut; }
-            set { _TimeOut = value; }
+            get => _TimeOut;
+            set => _TimeOut = value;
         }
 
         //internal CyUSBStorDevice(Guid g):base(Guid.Empty)	
@@ -65,7 +62,7 @@ namespace CyUSB
 
             _devices = DeviceCount;
             if (_devices == 0) return false;
-            if (dev > (_devices - 1)) return false;
+            if (dev      > _devices - 1) return false;
 
             _path = GetDevicePath(dev);  // Also sets the DrvGuid to either CdGuid or DiskGuid.
             _hDevice = PInvoke.GetDeviceHandle(_path, true);
@@ -83,13 +80,13 @@ namespace CyUSB
 
         private void GetDeviceParameters()
         {
-            int a = Path.IndexOf("usbstor");
-            int len = Path.IndexOf("#{") - a;
-            string tmp = Path.Substring(a, len).Replace("#", "\\");
-            string DevKeyString = "SYSTEM\\CurrentControlSet\\Enum\\" + tmp; // Location in XP
+            var a = Path.IndexOf("usbstor");
+            var len = Path.IndexOf("#{") - a;
+            var tmp = Path.Substring(a, len).Replace("#", "\\");
+            var DevKeyString = "SYSTEM\\CurrentControlSet\\Enum\\" + tmp; // Location in XP
 
-            RegistryKey LocalMachine = Registry.LocalMachine;
-            RegistryKey DevKey = LocalMachine.OpenSubKey(DevKeyString);
+            var LocalMachine = Registry.LocalMachine;
+            var DevKey = LocalMachine.OpenSubKey(DevKeyString);
             if (DevKey == null)
             {
                 DevKeyString = "Enum\\" + tmp; // Location in 98
@@ -100,7 +97,7 @@ namespace CyUSB
             _friendlyName = (string)DevKey.GetValue("FriendlyName");
 
 
-            int x = tmp.LastIndexOf("\\") + 1;
+            var x = tmp.LastIndexOf("\\") + 1;
             len = tmp.Length;
             _serialNumber = tmp.Substring(x, len - x).ToUpper();
 
@@ -112,8 +109,8 @@ namespace CyUSB
                 _serialNumber = _serialNumber.Substring(0, x);
             }
 
-            int lastAmpersand = _serialNumber.LastIndexOf("&");
-            string ParentIDPrefix = (lastAmpersand >= 0) ? _serialNumber.Substring(0, lastAmpersand) : "";
+            var lastAmpersand  = _serialNumber.LastIndexOf("&");
+            var ParentIDPrefix = lastAmpersand >= 0 ? _serialNumber.Substring(0, lastAmpersand) : "";
 
             DevKey = GetUSBDevKey(ParentIDPrefix);
             if (DevKey == null) return;
@@ -122,61 +119,61 @@ namespace CyUSB
             _name = (string)DevKey.GetValue("DeviceDesc");
             _product = (string)DevKey.GetValue("LocationInformation");
 
-            string[] vidpid = (string[])DevKey.GetValue("HardwareID");
+            var vidpid = (string[])DevKey.GetValue("HardwareID");
 
             x = vidpid[0].LastIndexOf("Vid_");
             if (x == -1)
                 x = vidpid[0].LastIndexOf("VID_");
             x = x + 4;
-            string sVid = vidpid[0].Substring(x, 4);
+            var sVid = vidpid[0].Substring(x, 4);
             _vendorID = (ushort)Util.HexToInt(sVid);
 
             x = vidpid[0].LastIndexOf("Pid_");
             if (x == -1)
                 x = vidpid[0].LastIndexOf("PID_");
             x = x + 4;
-            string sPid = vidpid[0].Substring(x, 4);
+            var sPid = vidpid[0].Substring(x, 4);
             _productID = (ushort)Util.HexToInt(sPid);
 
             x = vidpid[0].LastIndexOf("Rev_");
             if (x == -1)
                 x = vidpid[0].LastIndexOf("REV_");
             x = x + 4;
-            string sRev = vidpid[0].Substring(x, 4);
+            var sRev = vidpid[0].Substring(x, 4);
             _bcdUSB = (ushort)Util.HexToInt(sRev);
 
 
 
-            string[] classids = (string[])DevKey.GetValue("CompatibleIDs");
+            var classids = (string[])DevKey.GetValue("CompatibleIDs");
 
             x = classids[0].IndexOf("Class_") + 6;
-            string sClass = classids[0].Substring(x, 2);
+            var sClass = classids[0].Substring(x, 2);
             _devClass = (byte)Util.HexToInt(sClass);
 
             x = classids[0].IndexOf("SubClass_") + 9;
-            string sSub = classids[0].Substring(x, 2);
+            var sSub = classids[0].Substring(x, 2);
             _devSubClass = (byte)Util.HexToInt(sSub);
 
             x = classids[0].IndexOf("Prot_") + 5;
-            string sProt = classids[0].Substring(x, 2);
+            var sProt = classids[0].Substring(x, 2);
             _devProtocol = (byte)Util.HexToInt(sProt);
         }
 
 
         private RegistryKey GetUSBDevKey(string ParentPrefix)
         {
-            RegistryKey LocalMachine = Registry.LocalMachine;
-            RegistryKey DevKey = LocalMachine.OpenSubKey("SYSTEM\\CurrentControlSet\\Enum\\USB");
+            var LocalMachine = Registry.LocalMachine;
+            var DevKey = LocalMachine.OpenSubKey("SYSTEM\\CurrentControlSet\\Enum\\USB");
             if (DevKey == null)
             {
                 //DevKey = LocalMachine.OpenSubKey("Enum\\USB"); // Location in 98
                 //if (DevKey == null) return null;
             }
 
-            int usbKeys = DevKey.SubKeyCount;
-            string[] sUKeys = DevKey.GetSubKeyNames();
+            var usbKeys = DevKey.SubKeyCount;
+            var sUKeys = DevKey.GetSubKeyNames();
 
-            for (int i = 0; i < usbKeys; i++)
+            for (var i = 0; i < usbKeys; i++)
             {
                 RegistryKey usbKey = null;
                 try
@@ -186,10 +183,10 @@ namespace CyUSB
                 catch (SecurityException)
                 {
                 }
-                int dKeys = usbKey.SubKeyCount;
-                string[] sDKeys = usbKey.GetSubKeyNames();
+                var dKeys = usbKey.SubKeyCount;
+                var sDKeys = usbKey.GetSubKeyNames();
 
-                for (int j = 0; j < dKeys; j++)
+                for (var j = 0; j < dKeys; j++)
                 {
                     RegistryKey snKey = null;
                     try
@@ -213,7 +210,7 @@ namespace CyUSB
                     {
                     }
 
-                    string tmp = (string)itemKey.GetValue("ParentIdPrefix");
+                    var tmp = (string)itemKey.GetValue("ParentIdPrefix");
                     if (tmp != null)
                     {
                         if (ParentPrefix.Equals(tmp.ToUpper()))
@@ -328,18 +325,18 @@ namespace CyUSB
         {
             if (_alreadyDisposed) throw new ObjectDisposedException("");
 
-            StringBuilder s = new StringBuilder("<MSC_DEVICE>\r\n");
+            var s = new StringBuilder("<MSC_DEVICE>\r\n");
 
-            s.Append(string.Format("\tFriendlyName=\"{0}\"\r\n", FriendlyName));
-            s.Append(string.Format("\tManufacturer=\"{0}\"\r\n", Manufacturer));
-            s.Append(string.Format("\tProduct=\"{0}\"\r\n", Product));
-            s.Append(string.Format("\tSerialNumber=\"{0}\"\r\n", SerialNumber));
-            s.Append(string.Format("\tVendorID=\"{0}\"\r\n", Util.byteStr(VendorID)));
-            s.Append(string.Format("\tProductID=\"{0}\"\r\n", Util.byteStr(ProductID)));
-            s.Append(string.Format("\tClass=\"{0:X2}h\"\r\n", _devClass));
-            s.Append(string.Format("\tSubClass=\"{0:X2}h\"\r\n", _devSubClass));
-            s.Append(string.Format("\tProtocol=\"{0:X2}h\"\r\n", _devProtocol));
-            s.Append(string.Format("\tBcdUSB=\"{0}\"\r\n", Util.byteStr(_bcdUSB)));
+            s.Append($"\tFriendlyName=\"{FriendlyName}\"\r\n");
+            s.Append($"\tManufacturer=\"{Manufacturer}\"\r\n");
+            s.Append($"\tProduct=\"{Product}\"\r\n");
+            s.Append($"\tSerialNumber=\"{SerialNumber}\"\r\n");
+            s.Append($"\tVendorID=\"{Util.byteStr(VendorID)}\"\r\n");
+            s.Append($"\tProductID=\"{Util.byteStr(ProductID)}\"\r\n");
+            s.Append($"\tClass=\"{_devClass:X2}h\"\r\n");
+            s.Append($"\tSubClass=\"{_devSubClass:X2}h\"\r\n");
+            s.Append($"\tProtocol=\"{_devProtocol:X2}h\"\r\n");
+            s.Append($"\tBcdUSB=\"{Util.byteStr(_bcdUSB)}\"\r\n");
 
             s.Append("</MSC_DEVICE>\r\n");
             return s.ToString();
@@ -347,16 +344,16 @@ namespace CyUSB
 
         private unsafe bool SendScsiCmd64(byte cmd, byte op, byte lun, byte dirIn, int bank, int lba, int bytes, byte[] data)
         {
-            SCSI_PASS_THROUGH_WITH_BUFFERS sptB = new SCSI_PASS_THROUGH_WITH_BUFFERS();
-            int len = Marshal.SizeOf(sptB) + bytes;		// total size of buffer
-            byte[] buffer = new byte[len];
+            var sptB = new SCSI_PASS_THROUGH_WITH_BUFFERS();
+            var len = Marshal.SizeOf(sptB) + bytes;		// total size of buffer
+            var buffer = new byte[len];
 
 
             fixed (byte* buf = buffer)
             {
-                SCSI_PASS_THROUGH_WITH_BUFFERS* sptBuf = (SCSI_PASS_THROUGH_WITH_BUFFERS*)buf;
-                SCSI_PASS_THROUGH* spt = (SCSI_PASS_THROUGH*)buf;
-                CDB10* cdb = (CDB10*)&(spt->Cdb);
+                var  sptBuf = (SCSI_PASS_THROUGH_WITH_BUFFERS*)buf;
+                var  spt    = (SCSI_PASS_THROUGH*)buf;
+                var  cdb    = (CDB10*)&spt->Cdb;
                 bool bRetVal;
 
                 sptBuf->totalSize = (uint)len;
@@ -375,15 +372,15 @@ namespace CyUSB
                 cdb->OpCode = op;
                 cdb->LBA = (uint)lba;
                 cdb->Bank = (byte)bank;
-                Util.ReverseBytes((byte*)&(cdb->LBA), 4);
+                Util.ReverseBytes((byte*)&cdb->LBA, 4);
 
                 cdb->Blocks = (ushort)(bytes / _BlockSize);
-                Util.ReverseBytes((byte*)&(cdb->Blocks), 2);
+                Util.ReverseBytes((byte*)&cdb->Blocks, 2);
 
-                if ((dirIn == 0) && (data != null))
+                if (dirIn == 0 && data != null)
                     Marshal.Copy(data, 0, (IntPtr)(buf + Marshal.SizeOf(sptB)), bytes);
 
-                int[] BytesXfered = new int[1];
+                var BytesXfered = new int[1];
                 BytesXfered[0] = 0;
                 fixed (byte* lpInBuffer = buffer)
                 {
@@ -396,7 +393,7 @@ namespace CyUSB
                         }
                     }
                 }
-                int error = Marshal.GetLastWin32Error();
+                var error = Marshal.GetLastWin32Error();
 
                 if (dirIn == 1)
                     Marshal.Copy((IntPtr)(buf + Marshal.SizeOf(sptB)), data, 0, bytes);
@@ -406,16 +403,16 @@ namespace CyUSB
         }
         private unsafe bool SendScsiCmd32(byte cmd, byte op, byte lun, byte dirIn, int bank, int lba, int bytes, byte[] data)
         {
-            SCSI_PASS_THROUGH_WITH_BUFFERS32 sptB = new SCSI_PASS_THROUGH_WITH_BUFFERS32();
-            int len = Marshal.SizeOf(sptB) + bytes;		// total size of buffer
-            byte[] buffer = new byte[len];
+            var sptB = new SCSI_PASS_THROUGH_WITH_BUFFERS32();
+            var len = Marshal.SizeOf(sptB) + bytes;		// total size of buffer
+            var buffer = new byte[len];
 
 
             fixed (byte* buf = buffer)
             {
-                SCSI_PASS_THROUGH_WITH_BUFFERS32* sptBuf = (SCSI_PASS_THROUGH_WITH_BUFFERS32*)buf;
-                SCSI_PASS_THROUGH32* spt = (SCSI_PASS_THROUGH32*)buf;
-                CDB10* cdb = (CDB10*)&(spt->Cdb);
+                var  sptBuf = (SCSI_PASS_THROUGH_WITH_BUFFERS32*)buf;
+                var  spt    = (SCSI_PASS_THROUGH32*)buf;
+                var  cdb    = (CDB10*)&spt->Cdb;
                 bool bRetVal;
 
                 sptBuf->totalSize = (uint)len;
@@ -434,15 +431,15 @@ namespace CyUSB
                 cdb->OpCode = op;
                 cdb->LBA = (uint)lba;
                 cdb->Bank = (byte)bank;
-                Util.ReverseBytes((byte*)&(cdb->LBA), 4);
+                Util.ReverseBytes((byte*)&cdb->LBA, 4);
 
                 cdb->Blocks = (ushort)(bytes / _BlockSize);
-                Util.ReverseBytes((byte*)&(cdb->Blocks), 2);
+                Util.ReverseBytes((byte*)&cdb->Blocks, 2);
 
-                if ((dirIn == 0) && (data != null))
+                if (dirIn == 0 && data != null)
                     Marshal.Copy(data, 0, (IntPtr)(buf + Marshal.SizeOf(sptB)), bytes);
 
-                int[] BytesXfered = new int[1];
+                var BytesXfered = new int[1];
                 BytesXfered[0] = 0;
                 fixed (byte* lpInBuffer = buffer)
                 {
@@ -455,7 +452,7 @@ namespace CyUSB
                         }
                     }
                 }
-                int error = Marshal.GetLastWin32Error();
+                var error = Marshal.GetLastWin32Error();
 
                 if (dirIn == 1)
                     Marshal.Copy((IntPtr)(buf + Marshal.SizeOf(sptB)), data, 0, bytes);

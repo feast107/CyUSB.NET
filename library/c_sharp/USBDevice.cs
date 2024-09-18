@@ -107,7 +107,7 @@ namespace CyUSB
         {
             if (_alreadyDisposed) throw new ObjectDisposedException("");
 
-            DEV_BROADCAST_HANDLE hFilter = new DEV_BROADCAST_HANDLE();
+            var hFilter = new DEV_BROADCAST_HANDLE();
             hFilter.dbch_size = Marshal.SizeOf(hFilter);
             hFilter.dbch_devicetype = CyConst.DBT_DEVTYP_HANDLE;
             hFilter.dbch_handle = _hDevice;
@@ -126,7 +126,7 @@ namespace CyUSB
 
             if (this.GetType() != right.GetType()) return false;
 
-            USBDevice dev = right as USBDevice;
+            var dev = right as USBDevice;
 
             // The device paths of 2 different devices are unique in Windows
             return this._path.Equals(dev._path);
@@ -135,10 +135,10 @@ namespace CyUSB
 
         public override int GetHashCode()
         {
-            Random rnd = new Random();
-            int nRandom = rnd.Next(Int32.MinValue, Int32.MaxValue);
+            var rnd = new Random();
+            var nRandom = rnd.Next(Int32.MinValue, Int32.MaxValue);
             
-            return (nRandom ^ this.GetType().ToString().GetHashCode());
+            return nRandom ^ this.GetType().ToString().GetHashCode();
         }
 
         protected string _name;
@@ -278,9 +278,10 @@ namespace CyUSB
             {
                 if (_alreadyDisposed) throw new ObjectDisposedException("");
 
-                TreeNode t = new TreeNode(FriendlyName);
-
-                t.Tag = this;
+                var t = new TreeNode(FriendlyName)
+                {
+                    Tag = this
+                };
 
                 return t;
             }
@@ -288,10 +289,6 @@ namespace CyUSB
 
 
         protected string _driverName;
-        public string DriverName
-        {
-            get { return _driverName; }
-        }
-
+        public    string DriverName => _driverName;
     }
 }

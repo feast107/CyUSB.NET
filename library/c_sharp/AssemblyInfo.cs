@@ -19,6 +19,9 @@
  ##
  ## =======================================================
 */
+
+#if !NET
+
 using System.Reflection;
 using System.Runtime.CompilerServices;
 
@@ -49,3 +52,5 @@ using System.Runtime.CompilerServices;
 [assembly: AssemblyVersion("1.2.2.0")]
 
 [assembly: AssemblyFileVersionAttribute("1.2.2.0")]
+
+#endif

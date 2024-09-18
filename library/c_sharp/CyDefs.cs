@@ -199,7 +199,7 @@ namespace CyUSB
         public byte bDescriptorType;/* Descriptor Type */
         public byte bDevCapabilityType;/* Device capability type*/
         public byte bReserved; // no use
-        unsafe public fixed byte ContainerID[CyConst.USB_BOS_CAPABILITY_TYPE_CONTAINER_ID_SIZE];/* UUID */
+        public unsafe fixed byte ContainerID[CyConst.USB_BOS_CAPABILITY_TYPE_CONTAINER_ID_SIZE];/* UUID */
     }
 
     [StructLayout(LayoutKind.Sequential, Pack = 1)]
@@ -549,26 +549,26 @@ namespace CyUSB
 
         internal const byte USB_REQUEST_GET_DESCRIPTOR = 0x06;
 
-        internal const uint IOCTL_ADAPT_GET_DRIVER_VERSION = 0x00220000 + (0 * 4);
-        internal const uint IOCTL_ADAPT_GET_USBDI_VERSION = 0x00220000 + (1 * 4);
-        internal const uint IOCTL_ADAPT_GET_ALT_INTERFACE_SETTING = 0x00220000 + (2 * 4);
-        internal const uint IOCTL_ADAPT_SELECT_INTERFACE = 0x00220000 + (3 * 4);
-        internal const uint IOCTL_ADAPT_GET_ADDRESS = 0x00220000 + (4 * 4);
-        internal const uint IOCTL_ADAPT_GET_NUMBER_ENDPOINTS = 0x00220000 + (5 * 4);
-        internal const uint IOCTL_ADAPT_GET_DEVICE_POWER_STATE = 0x00220000 + (6 * 4);
-        internal const uint IOCTL_ADAPT_SET_DEVICE_POWER_STATE = 0x00220000 + (7 * 4);
-        internal const uint IOCTL_ADAPT_SEND_EP0_CONTROL_TRANSFER = 0x00220000 + (8 * 4);
-        internal const uint IOCTL_ADAPT_SEND_NON_EP0_TRANSFER = 0x00220000 + (9 * 4);
-        internal const uint IOCTL_ADAPT_CYCLE_PORT = 0x00220000 + (10 * 4);
-        internal const uint IOCTL_ADAPT_RESET_PIPE = 0x00220000 + (11 * 4);
-        internal const uint IOCTL_ADAPT_RESET_PARENT_PORT = 0x00220000 + (12 * 4);
-        internal const uint IOCTL_ADAPT_GET_TRANSFER_SIZE = 0x00220000 + (13 * 4);
-        internal const uint IOCTL_ADAPT_SET_TRANSFER_SIZE = 0x00220000 + (14 * 4);
-        internal const uint IOCTL_ADAPT_GET_DEVICE_NAME = 0x00220000 + (15 * 4);
-        internal const uint IOCTL_ADAPT_GET_FRIENDLY_NAME = 0x00220000 + (16 * 4);
-        internal const uint IOCTL_ADAPT_ABORT_PIPE = 0x00220000 + (17 * 4);
-        internal const uint IOCTL_ADAPT_SEND_NON_EP0_DIRECT = 0x00220003 + (18 * 4);
-        internal const uint IOCTL_ADAPT_GET_DEVICE_SPEED = 0x00220000 + (19 * 4);
+        internal const uint IOCTL_ADAPT_GET_DRIVER_VERSION        = 0x00220000 + 0  * 4;
+        internal const uint IOCTL_ADAPT_GET_USBDI_VERSION         = 0x00220000 + 1  * 4;
+        internal const uint IOCTL_ADAPT_GET_ALT_INTERFACE_SETTING = 0x00220000 + 2  * 4;
+        internal const uint IOCTL_ADAPT_SELECT_INTERFACE          = 0x00220000 + 3  * 4;
+        internal const uint IOCTL_ADAPT_GET_ADDRESS               = 0x00220000 + 4  * 4;
+        internal const uint IOCTL_ADAPT_GET_NUMBER_ENDPOINTS      = 0x00220000 + 5  * 4;
+        internal const uint IOCTL_ADAPT_GET_DEVICE_POWER_STATE    = 0x00220000 + 6  * 4;
+        internal const uint IOCTL_ADAPT_SET_DEVICE_POWER_STATE    = 0x00220000 + 7  * 4;
+        internal const uint IOCTL_ADAPT_SEND_EP0_CONTROL_TRANSFER = 0x00220000 + 8  * 4;
+        internal const uint IOCTL_ADAPT_SEND_NON_EP0_TRANSFER     = 0x00220000 + 9  * 4;
+        internal const uint IOCTL_ADAPT_CYCLE_PORT                = 0x00220000 + 10 * 4;
+        internal const uint IOCTL_ADAPT_RESET_PIPE                = 0x00220000 + 11 * 4;
+        internal const uint IOCTL_ADAPT_RESET_PARENT_PORT         = 0x00220000 + 12 * 4;
+        internal const uint IOCTL_ADAPT_GET_TRANSFER_SIZE         = 0x00220000 + 13 * 4;
+        internal const uint IOCTL_ADAPT_SET_TRANSFER_SIZE         = 0x00220000 + 14 * 4;
+        internal const uint IOCTL_ADAPT_GET_DEVICE_NAME           = 0x00220000 + 15 * 4;
+        internal const uint IOCTL_ADAPT_GET_FRIENDLY_NAME         = 0x00220000 + 16 * 4;
+        internal const uint IOCTL_ADAPT_ABORT_PIPE                = 0x00220000 + 17 * 4;
+        internal const uint IOCTL_ADAPT_SEND_NON_EP0_DIRECT       = 0x00220003 + 18 * 4;
+        internal const uint IOCTL_ADAPT_GET_DEVICE_SPEED          = 0x00220000 + 19 * 4;
 
 
         internal const uint IOCTL_SCSI_PASS_THROUGH = 0x0004d004;
@@ -611,7 +611,7 @@ namespace CyUSB
             // found in the registry.  This routine handles such situations, returning Guid.Empty.
             try
             {
-                Guid g = new Guid(sguid);
+                var g = new Guid(sguid);
                 return g;
             }
             catch

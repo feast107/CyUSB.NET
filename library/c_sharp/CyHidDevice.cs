@@ -35,48 +35,27 @@ namespace CyUSB
         byte* PreParsedData;
         internal HIDD_ATTRIBUTES Attributes;
 
-        HIDP_CAPS _Capabilities;
-        public HIDP_CAPS Capabilities
-        {
-            get { return _Capabilities; }
-        }
+        HIDP_CAPS        _Capabilities;
+        public HIDP_CAPS Capabilities => _Capabilities;
 
 
-        ushort _Usage;
-        public ushort Usage
-        {
-            get { return _Usage; }
-        }
+        ushort        _Usage;
+        public ushort Usage => _Usage;
 
-        ushort _UsagePage;
-        public ushort UsagePage
-        {
-            get { return _UsagePage; }
-        }
+        ushort        _UsagePage;
+        public ushort UsagePage => _UsagePage;
 
-        ushort _Version;
-        public ushort Version
-        {
-            get { return _Version; }
-        }
+        ushort        _Version;
+        public ushort Version => _Version;
 
-        CyHidReport _Inputs;
-        public CyHidReport Inputs
-        {
-            get { return _Inputs; }
-        }
+        CyHidReport        _Inputs;
+        public CyHidReport Inputs => _Inputs;
 
-        CyHidReport _Outputs;
-        public CyHidReport Outputs
-        {
-            get { return _Outputs; }
-        }
+        CyHidReport        _Outputs;
+        public CyHidReport Outputs => _Outputs;
 
-        CyHidReport _Features;
-        public CyHidReport Features
-        {
-            get { return _Features; }
-        }
+        CyHidReport        _Features;
+        public CyHidReport Features => _Features;
 
         internal CyHidDevice(Guid g)
             : base(g)
@@ -87,7 +66,7 @@ namespace CyUSB
         {
             get
             {
-                Guid hG = Guid.Empty;
+                var hG = Guid.Empty;
                 PInvoke.HidD_GetHidGuid(ref hG);
                 return hG;
             }
@@ -97,14 +76,14 @@ namespace CyUSB
         {
             get
             {
-                int nodes = 0;
+                var nodes = 0;
                 if (Features.NumItems > 0) nodes++;
                 if (Inputs.NumItems > 0) nodes++;
                 if (Outputs.NumItems > 0) nodes++;
 
-                int n = 0;
+                var n = 0;
 
-                TreeNode[] hidTree = new TreeNode[nodes];
+                var hidTree = new TreeNode[nodes];
                 if (Features.NumItems > 0)
                     hidTree[n++] = Features.Tree;
                 if (Inputs.NumItems > 0)
@@ -112,8 +91,10 @@ namespace CyUSB
                 if (Outputs.NumItems > 0)
                     hidTree[n++] = Outputs.Tree;
 
-                TreeNode t = new TreeNode(Product, hidTree);
-                t.Tag = this;
+                var t = new TreeNode(Product, hidTree)
+                {
+                    Tag = this
+                };
 
                 return t;
             }
@@ -124,22 +105,22 @@ namespace CyUSB
         {
             if (_alreadyDisposed) throw new ObjectDisposedException("");
 
-            StringBuilder s = new StringBuilder("<HID_DEVICE>\r\n");
+            var s = new StringBuilder("<HID_DEVICE>\r\n");
 
-            s.Append(string.Format("\tFriendlyName=\"{0}\"\r\n", FriendlyName));
-            s.Append(string.Format("\tManufacturer=\"{0}\"\r\n", Manufacturer));
-            s.Append(string.Format("\tProduct=\"{0}\"\r\n", Product));
-            s.Append(string.Format("\tSerialNumber=\"{0}\"\r\n", SerialNumber));
+            s.Append($"\tFriendlyName=\"{FriendlyName}\"\r\n");
+            s.Append($"\tManufacturer=\"{Manufacturer}\"\r\n");
+            s.Append($"\tProduct=\"{Product}\"\r\n");
+            s.Append($"\tSerialNumber=\"{SerialNumber}\"\r\n");
             //s.Append(string.Format("\tVendorID=\"{0:X4}\"\r\n", VendorID));
-            s.Append(string.Format("\tVendorID=\"{0}\"\r\n", Util.byteStr(VendorID)));
-            s.Append(string.Format("\tProductID=\"{0}\"\r\n", Util.byteStr(ProductID)));
-            s.Append(string.Format("\tClass=\"{0:X2}h\"\r\n", _devClass));
-            s.Append(string.Format("\tSubClass=\"{0:X2}h\"\r\n", _devSubClass));
-            s.Append(string.Format("\tProtocol=\"{0:X2}h\"\r\n", _devProtocol));
-            s.Append(string.Format("\tBcdUSB=\"{0}\"\r\n", Util.byteStr(_bcdUSB)));
-            s.Append(string.Format("\tUsage=\"{0}\"\r\n", Util.byteStr(_Usage)));
-            s.Append(string.Format("\tUsagePage=\"{0}\"\r\n", Util.byteStr(_UsagePage)));
-            s.Append(string.Format("\tVersion=\"{0}\"\r\n", Util.byteStr(_Version)));
+            s.Append($"\tVendorID=\"{Util.byteStr(VendorID)}\"\r\n");
+            s.Append($"\tProductID=\"{Util.byteStr(ProductID)}\"\r\n");
+            s.Append($"\tClass=\"{_devClass:X2}h\"\r\n");
+            s.Append($"\tSubClass=\"{_devSubClass:X2}h\"\r\n");
+            s.Append($"\tProtocol=\"{_devProtocol:X2}h\"\r\n");
+            s.Append($"\tBcdUSB=\"{Util.byteStr(_bcdUSB)}\"\r\n");
+            s.Append($"\tUsage=\"{Util.byteStr(_Usage)}\"\r\n");
+            s.Append($"\tUsagePage=\"{Util.byteStr(_UsagePage)}\"\r\n");
+            s.Append($"\tVersion=\"{Util.byteStr(_Version)}\"\r\n");
 
             if (_Features.NumItems > 0)
                 s.Append(_Features.ToString());
@@ -154,14 +135,11 @@ namespace CyUSB
             return s.ToString();
         }
 
-        private int _Access = 0;
-        public bool RwAccessible
-        {
-            get { return (_Access > 0); }
-        }
+        private int  _Access = 0;
+        public  bool RwAccessible => _Access > 0;
 
         // Opens a handle to the devTH device attached the HIDUSB.SYS driver
-        internal unsafe override bool Open(byte dev)
+        internal override unsafe bool Open(byte dev)
         {
 
             // If this object already has the driver open, close it.
@@ -170,7 +148,7 @@ namespace CyUSB
 
             int Devices = DeviceCount;
             if (Devices == 0) return false;
-            if (dev > (Devices - 1)) return false;
+            if (dev     > Devices - 1) return false;
 
             string pathDetect;
             _path = PInvoke.GetDevicePath(_drvGuid, dev);
@@ -195,11 +173,11 @@ namespace CyUSB
             }
             PreParsedData = null;
 
-            byte[] buffer = new byte[512];
+            var buffer = new byte[512];
 
             fixed (byte* buf = buffer)
             {
-                char* sChars = (char*)buf;
+                var sChars = (char*)buf;
 
                 if (PInvoke.HidD_GetManufacturerString(_hDevice, buffer, 512))
                     _manufacturer = new string(sChars);
@@ -296,7 +274,7 @@ namespace CyUSB
 
         public bool WriteOutput()
         {
-            int bytesWritten = 0;
+            var bytesWritten = 0;
 
             if (_Outputs.RptByteLen == 0) return false;
             if (!RwAccessible) return false;
@@ -325,7 +303,7 @@ namespace CyUSB
             _Inputs.Clear();
 
             // ReadFile will hang if the device does not have an input report ready.
-            int bytesRead = 0;
+            var bytesRead = 0;
 
             fixed (byte* buf = _Inputs.DataBuf)
             {

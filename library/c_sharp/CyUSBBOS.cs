@@ -34,18 +34,18 @@ namespace CyUSB
         private InvalidDeviceCapability InvalidDevCap;
 
         protected byte _bLength;/* Descriptor length*/
-        public byte Lenght { get { return _bLength; } }
+        public    byte Lenght => _bLength;
 
         protected byte _bDescriptorType;/* Descriptor Type */
-        public byte DescriptorType { get { return _bDescriptorType; } }
+        public    byte DescriptorType => _bDescriptorType;
 
         protected ushort _wToatalLength;/* Total length of descriptor ( icluding device capability*/
-        public ushort ToatalLength { get { return _wToatalLength; } }
+        public    ushort ToatalLength => _wToatalLength;
 
         protected byte _bNumDeviceCaps;/* Number of device capability descriptors in BOS  */
-        public byte NumDeviceCaps { get { return _bNumDeviceCaps; } }
+        public    byte NumDeviceCaps => _bNumDeviceCaps;
 
-        unsafe internal CyUSBBOS(IntPtr handle, byte[] BosDescrData)
+        internal unsafe CyUSBBOS(IntPtr handle, byte[] BosDescrData)
         {
             // initialize to null
             USB20_DeviceExt = null;
@@ -56,7 +56,7 @@ namespace CyUSB
             // parse the Bos Descriptor data
             fixed (byte* buf = BosDescrData)
             {
-                USB_BOS_DESCRIPTOR* BosDesc = (USB_BOS_DESCRIPTOR*)buf;
+                var BosDesc = (USB_BOS_DESCRIPTOR*)buf;
                 _bLength = BosDesc->bLength;
                 _bDescriptorType = BosDesc->bDescriptorType;
                 _bNumDeviceCaps = BosDesc->bNumDeviceCaps;
@@ -68,16 +68,16 @@ namespace CyUSB
                 if (totallen < 0)
                     return;
 
-                byte* DevCap = (byte*)(buf + BosDesc->bLength); // get nex descriptor
+                var DevCap = (byte*)(buf + BosDesc->bLength); // get nex descriptor
 
-                for (int i = 0; i < _bNumDeviceCaps; i++)
+                for (var i = 0; i < _bNumDeviceCaps; i++)
                 {
                     //check capability type
                     switch (DevCap[2])
                     {
                         case CyConst.USB_BOS_CAPABILITY_TYPE_USB20_EXT:
                             {
-                                USB_BOS_USB20_DEVICE_EXTENSION* USB20_ext = (USB_BOS_USB20_DEVICE_EXTENSION*)DevCap;
+                                var USB20_ext = (USB_BOS_USB20_DEVICE_EXTENSION*)DevCap;
                                 totallen -= USB20_ext->bLength;
                                 DevCap = (byte*)DevCap + USB20_ext->bLength;
                                 USB20_DeviceExt = new CyBOS_USB20_DEVICE_EXT(handle, USB20_ext);
@@ -85,7 +85,7 @@ namespace CyUSB
                             }
                         case CyConst.USB_BOS_CAPABILITY_TYPE_SUPERSPEED_USB:
                             {
-                                USB_BOS_SS_DEVICE_CAPABILITY* SS_Capability = (USB_BOS_SS_DEVICE_CAPABILITY*)DevCap;
+                                var SS_Capability = (USB_BOS_SS_DEVICE_CAPABILITY*)DevCap;
                                 totallen -= SS_Capability->bLength;
                                 DevCap = (byte*)DevCap + SS_Capability->bLength;
                                 SS_DeviceCap = new CyBOS_SS_DEVICE_CAPABILITY(handle, SS_Capability);
@@ -93,7 +93,7 @@ namespace CyUSB
                             }
                         case CyConst.USB_BOS_CAPABILITY_TYPE_CONTAINER_ID:
                             {
-                                USB_BOS_CONTAINER_ID* USB_ContainerID = (USB_BOS_CONTAINER_ID*)DevCap;
+                                var USB_ContainerID = (USB_BOS_CONTAINER_ID*)DevCap;
                                 totallen -= USB_ContainerID->bLength;
                                 DevCap = (byte*)DevCap + USB_ContainerID->bLength;
                                 Container_ID = new CyBOS_CONTAINER_ID(handle, USB_ContainerID);
@@ -116,17 +116,17 @@ namespace CyUSB
         {
             get
             {
-                string tmp = "BOS";
+                var tmp = "BOS";
 
-                TreeNode[] iTree = new TreeNode[NumDeviceCaps];
+                var iTree = new TreeNode[NumDeviceCaps];
 
-                for (int i = 0; i < NumDeviceCaps; i++)
+                for (var i = 0; i < NumDeviceCaps; i++)
                 {
-                    if ((USB20_DeviceExt != null) && (i == 0))
+                    if (USB20_DeviceExt != null && i == 0)
                         iTree[i] = USB20_DeviceExt.Tree;
-                    else if ((SS_DeviceCap != null) && (i == 1))
+                    else if (SS_DeviceCap != null && i == 1)
                         iTree[i] = SS_DeviceCap.Tree;
-                    else if ((Container_ID != null) && (i == 2))
+                    else if (Container_ID != null && i == 2)
                         iTree[i] = Container_ID.Tree;
                     else
                     {
@@ -134,8 +134,10 @@ namespace CyUSB
                     }
                 }
 
-                TreeNode t = new TreeNode(tmp, iTree);
-                t.Tag = this;
+                var t = new TreeNode(tmp, iTree)
+                {
+                    Tag = this
+                };
 
                 return t;
             }
@@ -144,19 +146,19 @@ namespace CyUSB
 
         public override string ToString()
         {
-            StringBuilder s = new StringBuilder("\t<BOS>\r\n");
+            var s = new StringBuilder("\t<BOS>\r\n");
 
-            s.Append(string.Format("\t\tNumberOfDeviceCapability=\"{0:X2}h\"\r\n", _bNumDeviceCaps));
-            s.Append(string.Format("\t\tDescriptorType=\"{0}\"\r\n", _bDescriptorType));
-            s.Append(string.Format("\t\tDescriptorLength=\"{0}\"\r\n", _bLength));
-            s.Append(string.Format("\t\tTotalLength=\"{0}\"\r\n", _wToatalLength));
-            for (int i = 0; i < NumDeviceCaps; i++)
+            s.Append($"\t\tNumberOfDeviceCapability=\"{_bNumDeviceCaps:X2}h\"\r\n");
+            s.Append($"\t\tDescriptorType=\"{_bDescriptorType}\"\r\n");
+            s.Append($"\t\tDescriptorLength=\"{_bLength}\"\r\n");
+            s.Append($"\t\tTotalLength=\"{_wToatalLength}\"\r\n");
+            for (var i = 0; i < NumDeviceCaps; i++)
             {
-                if ((USB20_DeviceExt != null) && (i == 0))
+                if (USB20_DeviceExt != null && i == 0)
                     s.Append(USB20_DeviceExt.ToString());
-                else if ((SS_DeviceCap != null) && (i == 1))
+                else if (SS_DeviceCap != null && i == 1)
                     s.Append(SS_DeviceCap.ToString());
-                else if ((Container_ID != null) && (i == 2))
+                else if (Container_ID != null && i == 2)
                     s.Append(Container_ID.ToString());
                 else
                     s.Append(InvalidDevCap.ToString());
@@ -174,15 +176,17 @@ namespace CyUSB
         {
             get
             {
-                string tmp = "Invalid Device Capability";
-                TreeNode t = new TreeNode(tmp);
-                t.Tag = this;
+                var tmp = "Invalid Device Capability";
+                var t   = new TreeNode(tmp)
+                {
+                    Tag = this
+                };
                 return t;
             }
         }
         public override string ToString()
         {
-            StringBuilder s = new StringBuilder("\t\t<Please correct your BOS descriptor table in firmware>\r\n");
+            var s = new StringBuilder("\t\t<Please correct your BOS descriptor table in firmware>\r\n");
             return s.ToString();
         }
     }
@@ -191,18 +195,18 @@ namespace CyUSB
     {
 
         protected byte _bLength;/* Descriptor length*/
-        public byte Lenght { get { return _bLength; } }
+        public    byte Lenght => _bLength;
 
         protected byte _bDescriptorType;/* Descriptor Type */
-        public byte DescriptorType { get { return _bDescriptorType; } }
+        public    byte DescriptorType => _bDescriptorType;
 
         protected byte _bDevCapabilityType;/* Device capability type*/
-        public byte DevCapabilityType { get { return _bDevCapabilityType; } }
+        public    byte DevCapabilityType => _bDevCapabilityType;
 
         protected uint _bmAttribute;// Bitmap encoding for supprted feature and  Link power managment supprted if set
-        public uint bmAttribute { get { return _bmAttribute; } }
+        public    uint bmAttribute => _bmAttribute;
 
-        unsafe internal CyBOS_USB20_DEVICE_EXT(IntPtr handle, USB_BOS_USB20_DEVICE_EXTENSION* USB20_DeviceExt)
+        internal unsafe CyBOS_USB20_DEVICE_EXT(IntPtr handle, USB_BOS_USB20_DEVICE_EXTENSION* USB20_DeviceExt)
         {
             _bLength = USB20_DeviceExt->bLength;
             _bDescriptorType = USB20_DeviceExt->bDescriptorType;
@@ -214,21 +218,23 @@ namespace CyUSB
         {
             get
             {
-                string tmp = "USB20 Device Extension";
-                TreeNode t = new TreeNode(tmp);
-                t.Tag = this;
+                var tmp = "USB20 Device Extension";
+                var t   = new TreeNode(tmp)
+                {
+                    Tag = this
+                };
                 return t;
             }
 
         }
         public override string ToString()
         {
-            StringBuilder s = new StringBuilder("\t\t<USB20 Device Extension>\r\n");
+            var s = new StringBuilder("\t\t<USB20 Device Extension>\r\n");
 
-            s.Append(string.Format("\t\t\tDescriptorLength=\"{0}\"\r\n", _bLength));
-            s.Append(string.Format("\t\t\tDescriptorType=\"{0}\"\r\n", _bDescriptorType));
-            s.Append(string.Format("\t\t\tDeviceCapabilityType=\"{0}\"\r\n", _bDevCapabilityType));
-            s.Append(string.Format("\t\t\tbmAttribute=\"{0:X2}h\"\r\n", _bmAttribute));
+            s.Append($"\t\t\tDescriptorLength=\"{_bLength}\"\r\n");
+            s.Append($"\t\t\tDescriptorType=\"{_bDescriptorType}\"\r\n");
+            s.Append($"\t\t\tDeviceCapabilityType=\"{_bDevCapabilityType}\"\r\n");
+            s.Append($"\t\t\tbmAttribute=\"{_bmAttribute:X2}h\"\r\n");
             s.Append("\t\t</USB20 Device Extension>\r\n");
             return s.ToString();
         }
@@ -237,30 +243,30 @@ namespace CyUSB
     public class CyBOS_SS_DEVICE_CAPABILITY
     {
         protected byte _bLength;/* Descriptor length*/
-        public byte Lenght { get { return _bLength; } }
+        public    byte Lenght => _bLength;
 
         protected byte _bDescriptorType;/* Descriptor Type */
-        public byte DescriptorType { get { return _bDescriptorType; } }
+        public    byte DescriptorType => _bDescriptorType;
 
         protected byte _bDevCapabilityType;/* Device capability type*/
-        public byte DevCapabilityType { get { return _bDevCapabilityType; } }
+        public    byte DevCapabilityType => _bDevCapabilityType;
 
         protected byte _bmAttribute;// Bitmap encoding for supprted feature and  Link power managment supprted if set
-        public byte bmAttribute { get { return _bmAttribute; } }
+        public    byte bmAttribute => _bmAttribute;
 
         protected ushort _wSpeedsSuported;//low speed supported if set,full speed supported if set,high speed supported if set,super speed supported if set,15:4 nt used
-        public ushort SpeedsSuported { get { return _wSpeedsSuported; } }
+        public    ushort SpeedsSuported => _wSpeedsSuported;
 
         protected byte _bFunctionalitySupporte;
-        public byte FunctionalitySupporte { get { return _bFunctionalitySupporte; } }
+        public    byte FunctionalitySupporte => _bFunctionalitySupporte;
 
         protected byte _bU1DevExitLat;//U1 device exit latency
-        public byte U1DevExitLat { get { return _bU1DevExitLat; } }
+        public    byte U1DevExitLat => _bU1DevExitLat;
 
         protected ushort _bU2DevExitLat;//U2 device exit latency
-        public ushort U2DevExitLat { get { return _bU2DevExitLat; } }
+        public    ushort U2DevExitLat => _bU2DevExitLat;
 
-        unsafe internal CyBOS_SS_DEVICE_CAPABILITY(IntPtr handle, USB_BOS_SS_DEVICE_CAPABILITY* USB_SuperSpeedUsb)
+        internal unsafe CyBOS_SS_DEVICE_CAPABILITY(IntPtr handle, USB_BOS_SS_DEVICE_CAPABILITY* USB_SuperSpeedUsb)
         {
             _bLength = USB_SuperSpeedUsb->bLength;
             _bDescriptorType = USB_SuperSpeedUsb->bDescriptorType;
@@ -274,24 +280,26 @@ namespace CyUSB
         {
             get
             {
-                string tmp = "SuperSpeed Device capability";
-                TreeNode t = new TreeNode(tmp);
-                t.Tag = this;
+                var tmp = "SuperSpeed Device capability";
+                var t   = new TreeNode(tmp)
+                {
+                    Tag = this
+                };
                 return t;
             }
 
         }
         public override string ToString()
         {
-            StringBuilder s = new StringBuilder("\t\t<SUPERSPEED USB>\r\n");
+            var s = new StringBuilder("\t\t<SUPERSPEED USB>\r\n");
 
-            s.Append(string.Format("\t\t\tDescriptorLength=\"{0}\"\r\n", _bLength));
-            s.Append(string.Format("\t\t\tDescriptorType=\"{0}\"\r\n", _bDescriptorType));
-            s.Append(string.Format("\t\t\tDeviceCapabilityType=\"{0}\"\r\n", _bDevCapabilityType));
-            s.Append(string.Format("\t\t\tFunctionalitySupporte=\"{0}\"\r\n", _bFunctionalitySupporte));
-            s.Append(string.Format("\t\t\tbmAttribute=\"{0:X2}h\"\r\n", _bmAttribute));
-            s.Append(string.Format("\t\t\tU1Device Exit Latency=\"{0}\"\r\n", _bU1DevExitLat));
-            s.Append(string.Format("\t\t\tU2Device Exit Latency=\"{0:X2}h\"\r\n", _bU2DevExitLat));
+            s.Append($"\t\t\tDescriptorLength=\"{_bLength}\"\r\n");
+            s.Append($"\t\t\tDescriptorType=\"{_bDescriptorType}\"\r\n");
+            s.Append($"\t\t\tDeviceCapabilityType=\"{_bDevCapabilityType}\"\r\n");
+            s.Append($"\t\t\tFunctionalitySupporte=\"{_bFunctionalitySupporte}\"\r\n");
+            s.Append($"\t\t\tbmAttribute=\"{_bmAttribute:X2}h\"\r\n");
+            s.Append($"\t\t\tU1Device Exit Latency=\"{_bU1DevExitLat}\"\r\n");
+            s.Append($"\t\t\tU2Device Exit Latency=\"{_bU2DevExitLat:X2}h\"\r\n");
             s.Append("\t\t</SUPERSPEED USB>\r\n");
             return s.ToString();
         }
@@ -300,27 +308,27 @@ namespace CyUSB
     public class CyBOS_CONTAINER_ID
     {
         protected byte _bLength;/* Descriptor length*/
-        public byte Lenght { get { return _bLength; } }
+        public    byte Lenght => _bLength;
 
         protected byte _bDescriptorType;/* Descriptor Type */
-        public byte DescriptorType { get { return _bDescriptorType; } }
+        public    byte DescriptorType => _bDescriptorType;
 
         protected byte _bDevCapabilityType;/* Device capability type*/
-        public byte DevCapabilityType { get { return _bDevCapabilityType; } }
+        public    byte DevCapabilityType => _bDevCapabilityType;
 
         protected byte _bResrved; // no use
-        public byte Reserved { get { return _bResrved; } }
+        public    byte Reserved => _bResrved;
 
         protected byte[] _ContainerID;/* UUID */
-        public byte[] ContainerID { get { return _ContainerID; } }
+        public    byte[] ContainerID => _ContainerID;
 
-        unsafe internal CyBOS_CONTAINER_ID(IntPtr handle, USB_BOS_CONTAINER_ID* USB_ContainerID)
+        internal unsafe CyBOS_CONTAINER_ID(IntPtr handle, USB_BOS_CONTAINER_ID* USB_ContainerID)
         {
             _bLength = USB_ContainerID->bLength;
             _bDescriptorType = USB_ContainerID->bDescriptorType;
             _bDevCapabilityType = USB_ContainerID->bDevCapabilityType;
             _ContainerID = new byte[CyConst.USB_BOS_CAPABILITY_TYPE_CONTAINER_ID_SIZE];
-            for (int i = 0; i < CyConst.USB_BOS_CAPABILITY_TYPE_CONTAINER_ID_SIZE; i++)
+            for (var i = 0; i < CyConst.USB_BOS_CAPABILITY_TYPE_CONTAINER_ID_SIZE; i++)
                 _ContainerID[i] = USB_ContainerID->ContainerID[i];
 
         }
@@ -328,20 +336,22 @@ namespace CyUSB
         {
             get
             {
-                string tmp = "Container ID";
-                TreeNode t = new TreeNode(tmp);
-                t.Tag = this;
+                var tmp = "Container ID";
+                var t   = new TreeNode(tmp)
+                {
+                    Tag = this
+                };
                 return t;
             }
 
         }
         public override string ToString()
         {
-            StringBuilder s = new StringBuilder("\t\t<CONTAINER ID>\r\n");
+            var s = new StringBuilder("\t\t<CONTAINER ID>\r\n");
 
-            s.Append(string.Format("\t\t\tDescriptorLength=\"{0}\"\r\n", _bLength));
-            s.Append(string.Format("\t\t\tDescriptorType=\"{0}\"\r\n", _bDescriptorType));
-            s.Append(string.Format("\t\t\tDeviceCapabilityType=\"{0}\"\r\n", _bDevCapabilityType));
+            s.Append($"\t\t\tDescriptorLength=\"{_bLength}\"\r\n");
+            s.Append($"\t\t\tDescriptorType=\"{_bDescriptorType}\"\r\n");
+            s.Append($"\t\t\tDeviceCapabilityType=\"{_bDevCapabilityType}\"\r\n");
             //s.Append(string.Format("\t\tbmAttribute=\"{0:X2}h\"\r\n", _ContainerID.));            
             s.Append("\t\t</CONTAINER ID>\r\n");
             return s.ToString();

@@ -37,43 +37,43 @@ namespace CyUSB
 
         public static ushort MaxFwSize
         {
-            get { return _MAX_FW_SIZE; }
-            set { _MAX_FW_SIZE = value; }
+            get => _MAX_FW_SIZE;
+            set => _MAX_FW_SIZE = value;
         }
 
         public static int ReverseBytes(byte[] dta, int xStart, int bytes)
         {
             if (bytes < 0) return 0;
 
-            byte[] tmp = new byte[bytes];
+            var tmp = new byte[bytes];
 
             for (byte i = 0; i < bytes; i++) tmp[i] = dta[xStart + bytes - i - 1];	// Reverse
             for (byte i = 0; i < bytes; i++) dta[xStart + i] = tmp[i];			// Copy back
 
-            int v = (bytes > 2) ? BitConverter.ToInt32(tmp, 0) : BitConverter.ToInt16(tmp, 0);
+            var v = bytes > 2 ? BitConverter.ToInt32(tmp, 0) : BitConverter.ToInt16(tmp, 0);
 
             return v;
         }
 
-        public unsafe static int ReverseBytes(byte* dta, int bytes)
+        public static unsafe int ReverseBytes(byte* dta, int bytes)
         {
             if (bytes < 0) return 0;
 
-            byte[] tmp = new byte[bytes];
+            var tmp = new byte[bytes];
 
             for (byte i = 0; i < bytes; i++) tmp[i] = *(dta + bytes - i - 1);			// Reverse
             for (byte i = 0; i < bytes; i++) *(dta + i) = tmp[i];					// Copy back
 
-            int v = (bytes > 2) ? BitConverter.ToInt32(tmp, 0) : BitConverter.ToInt16(tmp, 0);
+            var v = bytes > 2 ? BitConverter.ToInt32(tmp, 0) : BitConverter.ToInt16(tmp, 0);
 
             return v;
         }
 
         public static ulong HexToInt(String hexString)
         {
-            string HexChars = "0123456789abcdef";
+            var HexChars = "0123456789abcdef";
 
-            string s = hexString.ToLower();
+            var s = hexString.ToLower();
 
             // Trim off the 0x prefix
             if (s.Length > 2)
@@ -81,18 +81,18 @@ namespace CyUSB
                     s = s.Substring(2, s.Length - 2);
 
 
-            string _s = "";
-            int len = s.Length;
+            var _s = "";
+            var len = s.Length;
 
             // Reverse the digits
-            for (int i = len - 1; i >= 0; i--) _s += s[i];
+            for (var i = len - 1; i >= 0; i--) _s += s[i];
 
             ulong sum = 0;
             ulong pwrF = 1;
-            for (int i = 0; i < len; i++)
+            for (var i = 0; i < len; i++)
             {
-                uint ordinal = (uint)HexChars.IndexOf(_s[i]);
-                sum += (i == 0) ? ordinal : pwrF * ordinal;
+                var ordinal = (uint)HexChars.IndexOf(_s[i]);
+                sum  += i == 0 ? ordinal : pwrF * ordinal;
                 pwrF *= 16;
             }
 
@@ -105,23 +105,23 @@ namespace CyUSB
             get
             {
                 // Get all the assemblies currently loaded in the application domain.
-                Assembly[] myAssemblies = Thread.GetDomain().GetAssemblies();
+                var myAssemblies = Thread.GetDomain().GetAssemblies();
 
-                string assemblyList = "";// "Assemblies\r\n----------\r\n\n";
+                var assemblyList = "";// "Assemblies\r\n----------\r\n\n";
 
-                foreach (Assembly a in myAssemblies)
+                foreach (var a in myAssemblies)
                 {
-                    string assName = a.GetName().Name;
-                    string assVer = a.GetName().Version.ToString();
+                    var assName = a.GetName().Name;
+                    var assVer = a.GetName().Version.ToString();
 
-                    int a1 = assName.Length;
-                    int a2 = assVer.Length;
+                    var a1 = assName.Length;
+                    var a2 = assVer.Length;
 
-                    if ((assName.IndexOf("System") == -1) &&
-        (assName.IndexOf("mscorlib") == -1) &&
-        (assName.IndexOf("Microsoft") == -1) &&
-        (assName.IndexOf("vshost") == -1))
-                        assemblyList += string.Format("Assembly:  {0}  ({1})\r\n", assName, assVer);
+                    if (assName.IndexOf("System") == -1 &&
+        assName.IndexOf("mscorlib")               == -1 &&
+        assName.IndexOf("Microsoft")              == -1 &&
+        assName.IndexOf("vshost")                 == -1)
+                        assemblyList += $"Assembly:  {assName}  ({assVer})\r\n";
                 }
 
                 return assemblyList;
@@ -134,11 +134,11 @@ namespace CyUSB
         {
             if (!File.Exists(fName)) return false;
 
-            ArrayList rawList = new ArrayList();
+            var rawList = new ArrayList();
 
             string line;
 
-            StreamReader srcStream = new StreamReader(fName);
+            var srcStream = new StreamReader(fName);
             if (srcStream == null) return false;
             while ((line = srcStream.ReadLine()) != null)
                 rawList.Add(line);
@@ -155,7 +155,7 @@ namespace CyUSB
             int v;
 
             // Delete non-data records
-            for (int i = rawList.Count - 1; i >= 0; i--)
+            for (var i = rawList.Count - 1; i >= 0; i--)
             {
                 line = (string)rawList[i];
                 if (line.Length > 0)
@@ -170,10 +170,10 @@ namespace CyUSB
             FwOff = _MAX_FW_SIZE;
 
             // Initialize the FwImage[] buffer
-            for (int i = 0; i < _MAX_FW_SIZE; i++) FwBuf[i] = 0xFF;
+            for (var i = 0; i < _MAX_FW_SIZE; i++) FwBuf[i] = 0xFF;
 
             // Extract the FW data bytes, placing into location of FwImage indicated
-            for (int i = 0; i < rawList.Count; i++)
+            for (var i = 0; i < rawList.Count; i++)
             {
                 line = (string)rawList[i];
 
@@ -186,8 +186,8 @@ namespace CyUSB
                 if (line.Length > 0)
                 {
                     // Get the offset
-                    string sOffset = line.Substring(3, 4);
-                    ushort dx = (ushort)Util.HexToInt(sOffset);
+                    var sOffset = line.Substring(3, 4);
+                    var dx = (ushort)Util.HexToInt(sOffset);
                     if (dx >= _MAX_FW_SIZE) return false;
 
                     if (dx < FwOff) FwOff = dx;
@@ -195,12 +195,12 @@ namespace CyUSB
                     // Get the string of data chars
                     tmp = line.Substring(1, 2);
                     v = (int)Util.HexToInt(tmp) * 2;
-                    string s = line.Substring(9, v);
+                    var s = line.Substring(9, v);
 
-                    int bytes = v / 2;
+                    var bytes = v / 2;
 
-                    for (int b = 0; b < bytes; b++, dx++)
-                        FwBuf[dx] = (byte)Util.HexToInt(s.Substring((b * 2), 2));
+                    for (var b = 0; b < bytes; b++, dx++)
+                        FwBuf[dx] = (byte)Util.HexToInt(s.Substring(b * 2, 2));
 
                     if (dx > FwLen) FwLen = dx;
                 }
@@ -218,8 +218,8 @@ namespace CyUSB
             // Suck-in the data from the .iic file
             Stream fStream = new FileStream(fName, FileMode.Open, FileAccess.Read);
             if (fStream == null) return false;
-            int fSize = (int)fStream.Length;
-            byte[] fData = new byte[fSize];
+            var fSize = (int)fStream.Length;
+            var fData = new byte[fSize];
             fStream.Read(fData, 0, fSize);
             fStream.Close();
 
@@ -237,7 +237,7 @@ namespace CyUSB
             FwLen = 0;
             FwOff = _MAX_FW_SIZE;
 
-            for (int i = 0; i < _MAX_FW_SIZE; i++) FwBuf[i] = 0xFF;
+            for (var i = 0; i < _MAX_FW_SIZE; i++) FwBuf[i] = 0xFF;
 
             fixed (byte* buf = fData)
             {
@@ -251,25 +251,25 @@ namespace CyUSB
                     dLen = (ushort*)(buf + dx);
                     addr = (ushort*)(buf + dx + 2);
 
-                    if ((*dLen) != 0x8001)
+                    if (*dLen != 0x8001)
                     {
                         Array.Copy(fData, dx + 4, FwBuf, *addr, *dLen);
-                        ushort lastDta = (ushort)(*addr + *dLen);
+                        var lastDta = (ushort)(*addr + *dLen);
                         if (lastDta > FwLen) FwLen = lastDta;
                         if (*addr < FwOff) FwOff = *addr;
                     }
 
                     dx += (ushort)(*dLen + 4);
-                } while (((*dLen) != 0x8001) && (dx < fData.Length));
+                } while (*dLen != 0x8001 && dx < fData.Length);
             }
 
         }
 
         public static string byteStr(ushort val)
         {
-            byte b1 = (byte)((val >> 8) & 0x00FF);
-            byte b2 = (byte)(val & 0x00FF);
-            return string.Format("{0:X2} {1:X2}", b1, b2);
+            var b1 = (byte)((val >> 8) & 0x00FF);
+            var b2 = (byte)(val & 0x00FF);
+            return $"{b1:X2} {b2:X2}";
         }
 
 
